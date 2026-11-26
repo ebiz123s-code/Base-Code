@@ -103,10 +103,22 @@ It follows the outline above, with these choices made during the build:
 
 Tested with a logic script and a headless browser run through a level, a daily ten, the timed round and a reload. Not yet tried with a child.
 
+### Version 2: division (27 November 2026)
+
+Added to the same page as a Times / Divide switch on the home screen.
+
+- **Separate memory.** Divide has its own grid, levels, best time and "facts to help with" list, because knowing 7 x 8 does not always mean knowing 56 / 7. The streak and "done for today" are shared.
+- **Levels:** the same order as Times without "Turn it around": divide by 1 and 10, 2, 5, 4, 9, 3, 6, 8, squares, 7, mixed, bonus 11 and 12.
+- **Tricks:** halve for 2, halve twice for 4, halve three times for 8, double then divide by 10 for 5, move the digits right for 10. For 3, 6, 7, 9, 11 and 12: "ask what times the number makes it". The 9s card adds the shortcut that the answer is one more than the tens digit.
+- **Slips named:** one out (with a check by multiplying), giving the number divided by, and subtracting instead of dividing.
+- **Times change made at the same time:** facts with a 9 use the "x10, take one away" trick first, and a second way is shown when a fact has two tricks.
+
+Tested with the logic script and a headless browser run in Divide mode. Not yet tried with a child.
+
 ### What comes after version 1
 
 1. Try version 1 with three to five children and watch where they get stuck or bored.
-2. Version 2: division as the same facts in reverse.
+2. Version 2: division as the same facts in reverse. Done, see above.
 3. Tier 2: parent and child sign-ons, saved progress, the grid over time.
 4. More skills, each one building on the last: multiplying larger numbers by breaking them apart, fractions, negative numbers, simple equations, then factoring (already prototyped).
 5. Tier 3 once there are enough skills for the homework photo to be useful.

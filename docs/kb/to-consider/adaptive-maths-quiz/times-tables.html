@@ -57,6 +57,9 @@ p { margin: 0; }
 .streak { font-weight: 700; border: 2px solid var(--rule); border-radius: 999px; padding: 0.15rem 0.8rem; background: var(--panel); }
 .view { display: flex; flex-direction: column; gap: 1.25rem; }
 .block { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.switch { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.sw { font-family: var(--font-show); font-size: 1.15rem; padding: 0.45rem; border: 2px solid var(--rule); border-radius: 10px; background: var(--panel); color: var(--ink); cursor: pointer; }
+.sw[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .row { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; justify-content: space-between; }
 
 .btn {
@@ -158,6 +161,10 @@ details.parent { background: var(--panel); border: 1px solid var(--rule); border
 
   <!-- HOME -->
   <div class="view" id="home">
+    <div class="switch" role="group" aria-label="Choose times or divide">
+      <button type="button" class="sw" id="opM">&times; Times</button>
+      <button type="button" class="sw" id="opD">&divide; Divide</button>
+    </div>
     <div class="block">
       <div class="row">
         <div>
@@ -173,7 +180,7 @@ details.parent { background: var(--panel); border: 1px solid var(--rule); border
         <h2>Your grid</h2>
         <span id="left" class="muted"></span>
       </div>
-      <p class="muted small">Every square is one fact. Get a fact right three times, with other questions in between, and its square lights up gold. Each fact fills two squares, because 3 × 7 and 7 × 3 are the same.</p>
+      <p class="muted small" id="gridText">Every square is one fact. Get a fact right three times, with other questions in between, and its square lights up gold. Each fact fills two squares, because 3 × 7 and 7 × 3 are the same.</p>
       <div class="grid-wrap"><table class="grid" id="grid" aria-label="Times tables grid"></table></div>
       <div class="legend"><span><i></i>Not yet</span><span><i class="s1"></i>Started</span><span><i class="s2"></i>Nearly</span><span><i class="s3"></i>Solid</span></div>
       <p class="peek" id="peek" hidden></p>
@@ -181,7 +188,7 @@ details.parent { background: var(--panel); border: 1px solid var(--rule); border
 
     <div class="block">
       <h2>Learn the tricks</h2>
-      <p class="muted small">Each level teaches one trick. Start at the top, or pick any table you want to practise.</p>
+      <p class="muted small" id="levelsText">Each level teaches one trick. Start at the top, or pick any table you want to practise.</p>
       <div class="levels" id="levels"></div>
     </div>
 
@@ -198,7 +205,7 @@ details.parent { background: var(--panel); border: 1px solid var(--rule); border
     <details class="parent" id="parent">
       <summary>For parents</summary>
       <div class="card-body">
-        <p>This trainer teaches a trick for each table, then practises until each fact sticks. A gold square means your child has answered that fact correctly three times without a hint. Gold facts come back for review and fade if they are missed.</p>
+        <p>This trainer teaches a trick for each table, then practises until each fact sticks. Times and Divide keep separate grids, because knowing 7 &times; 8 does not always mean knowing 56 &divide; 7. A gold square means your child has answered that fact correctly three times without a hint. Gold facts come back for review and fade if they are missed.</p>
         <p><strong>Facts to help with</strong></p>
         <ol class="weak" id="weak"></ol>
         <p class="muted small">Progress is saved in this browser on this device only. Nothing is sent anywhere, and clearing the browser's data erases it.</p>
@@ -245,7 +252,7 @@ details.parent { background: var(--panel); border: 1px solid var(--rule); border
 
 <script>
 // ================= logic (no page access) =================
-var X = '×', MINUS = '−';
+var X = '×', DIV = '÷', MINUS = '−';
 function ri(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
 function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = ri(0, i); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 function key(a, b) { return a <= b ? a + ',' + b : b + ',' + a; }
@@ -350,6 +357,61 @@ function distractors(a, b) {
   return out;
 }
 
+// ----- division: the same facts in reverse. d is the number divided by, qn is the answer. -----
+function dwork(d, qn) {
+  var p = d * qn;
+  switch (d) {
+    case 1: return 'Dividing by 1 changes nothing: ' + p + ' ' + DIV + ' 1 = ' + p + '.';
+    case 10: return 'Move each digit one place to the right: ' + p + ' becomes ' + qn + '.';
+    case 2: return 'Halve it: half of ' + p + ' is ' + qn + '.';
+    case 4: return 'Half of ' + p + ' is ' + p / 2 + '. Half again is ' + qn + '.';
+    case 8: return 'Halve three times: ' + p / 2 + ', ' + p / 4 + ', ' + qn + '.';
+    case 5: return 'Double ' + p + ' to get ' + 2 * p + ', then divide by 10: ' + qn + '.';
+    default: return 'Ask: ' + d + ' times what makes ' + p + '? ' + d + ' ' + X + ' ' + qn + ' = ' + p + ', so the answer is ' + qn + '.';
+  }
+}
+function dhint(d, p) {
+  switch (d) {
+    case 1: return 'Dividing by 1 changes nothing.';
+    case 10: return 'Move the digits of ' + p + ' one place to the right.';
+    case 2: return 'Halve ' + p + '.';
+    case 4: return 'Halve ' + p + ', then halve again.';
+    case 8: return 'Halve ' + p + ' three times.';
+    case 5: return 'Double ' + p + ', then divide by 10.';
+    default: return 'Ask: ' + d + ' times what makes ' + p + '?';
+  }
+}
+function ddistractors(d, qn) {
+  var out = [], seen = {}; seen[qn] = 1;
+  function take(v) { if (v > 0 && !seen[v] && out.length < 3) { seen[v] = 1; out.push(v); } }
+  shuffle([qn + 1, qn - 1]).forEach(function (v) { if (out.length < 1) take(v); });
+  take(d);
+  shuffle([qn + 1, qn - 1, qn + 2, qn - 2]).forEach(take);
+  [qn + 3, qn + 4, qn + 5].forEach(take);
+  return out;
+}
+function dtip(d, qn, v) {
+  var p = d * qn;
+  if (v === qn + 1 || v === qn - 1) return 'One out. Check by multiplying: ' + d + ' ' + X + ' ' + v + ' = ' + d * v + ', not ' + p + '.';
+  if (v === d) return 'That is the number you were dividing by.';
+  if (v === p - d) return 'That is ' + p + ' take away ' + d + '. Dividing asks how many lots of ' + d + ' fit into ' + p + '.';
+  return '';
+}
+var DCARDS = {
+  t1: { idea: 'Dividing by 1 changes nothing. Dividing by 10 moves each digit one place to the right.', ex: ['7 ' + DIV + ' 1 = 7', '70 ' + DIV + ' 10 = 7'] },
+  t2: { idea: 'Dividing by 2 means halving.', ex: ['14 ' + DIV + ' 2: half of 14 is 7', '18 ' + DIV + ' 2: half of 18 is 9'] },
+  t5: { idea: 'Five is half of ten. So double the number first, then divide by 10.', ex: ['40 ' + DIV + ' 5: double 40 is 80, and 80 ' + DIV + ' 10 = 8', '35 ' + DIV + ' 5: double 35 is 70, and 70 ' + DIV + ' 10 = 7'] },
+  t4: { idea: 'Four is double two. Halve the number, then halve again.', ex: ['28 ' + DIV + ' 4: half is 14, half again is 7', '36 ' + DIV + ' 4: half is 18, half again is 9'] },
+  t9: { idea: 'Ask: 9 times what makes it? A shortcut for the 9s: the answer is one more than the tens digit.', ex: ['63 ' + DIV + ' 9: 9 ' + X + ' 7 = 63, so the answer is 7 (one more than the 6)', '36 ' + DIV + ' 9: 9 ' + X + ' 4 = 36, so the answer is 4 (one more than the 3)'] },
+  t3: { idea: 'Dividing is times in reverse. Ask: 3 times what makes it?', ex: ['21 ' + DIV + ' 3: 3 ' + X + ' 7 = 21, so the answer is 7', '24 ' + DIV + ' 3: 3 ' + X + ' 8 = 24, so the answer is 8'] },
+  t6: { idea: 'Ask: 6 times what makes it?', ex: ['42 ' + DIV + ' 6: 6 ' + X + ' 7 = 42, so the answer is 7', '48 ' + DIV + ' 6: 6 ' + X + ' 8 = 48, so the answer is 8'] },
+  t8: { idea: 'Eight is double, double, double. So halve three times.', ex: ['48 ' + DIV + ' 8: 24, 12, 6', '56 ' + DIV + ' 8: 28, 14, 7'] },
+  sq: { idea: 'A square number divided by its own root gives the root back.', ex: ['49 ' + DIV + ' 7 = 7', '81 ' + DIV + ' 9 = 9'] },
+  t7: { idea: 'Ask: 7 times what makes it? You know these from the times grid.', ex: ['56 ' + DIV + ' 7: 7 ' + X + ' 8 = 56, so the answer is 8', '42 ' + DIV + ' 7: 7 ' + X + ' 6 = 42, so the answer is 6'] },
+  mix: { idea: 'Any division, in any order. Halve if you can. If not, ask what the number times what makes it.', ex: ['54 ' + DIV + ' 9: 9 ' + X + ' 6 = 54, so the answer is 6', '32 ' + DIV + ' 4: half is 16, half again is 8'] },
+  bonus: { idea: 'Ask: 11 or 12 times what makes it?', ex: ['77 ' + DIV + ' 11: 11 ' + X + ' 7 = 77, so the answer is 7', '84 ' + DIV + ' 12: 12 ' + X + ' 7 = 84, so the answer is 7'] }
+};
+
 // ----- fact memory -----
 // f.s: 0 to 3 (3 = solid). A right answer only counts if 5 other questions came since the last one that counted.
 function markFact(state, k, ok, hinted) {
@@ -366,8 +428,14 @@ function markFact(state, k, ok, hinted) {
   return { before: before, after: f.s };
 }
 function gridKeys() { var k = [], a, b; for (a = 1; a <= 10; a++) for (b = a; b <= 10; b++) k.push(key(a, b)); return k; }
-function solidCount(state) { return gridKeys().filter(function (k) { return state.facts[k] && state.facts[k].s === 3; }).length; }
-function currentLevel(state) { for (var i = 0; i < LEVELS.length; i++) if (!state.done[LEVELS[i].id]) return i; return LEVELS.length - 1; }
+function solidCount(state, pre) { pre = pre || ''; return gridKeys().filter(function (k) { return state.facts[pre + k] && state.facts[pre + k].s === 3; }).length; }
+// pre is '' for times and 'd' for divide. Divide has no "turn it around" level.
+function levelsFor(pre) { return pre ? LEVELS.filter(function (L) { return !L.turn; }) : LEVELS; }
+function currentLevel(state, pre, levels) {
+  pre = pre || ''; levels = levels || levelsFor(pre);
+  for (var i = 0; i < levels.length; i++) if (!state.done[pre ? pre + ':' + levels[i].id : levels[i].id]) return i;
+  return levels.length - 1;
+}
 
 // One main trick per fact (9s before 5s), and the first level that teaches the fact.
 var ITEMS = (function () {
@@ -383,16 +451,17 @@ var ITEMS = (function () {
   return m;
 })();
 
-function pickDaily(state) {
-  var cur = currentLevel(state), due = [], weak = [], fresh = [];
+function pickDaily(state, pre) {
+  pre = pre || '';
+  var lv = levelsFor(pre), cur = LEVELS.indexOf(lv[currentLevel(state, pre, lv)]), due = [], weak = [], fresh = [];
   Object.keys(ITEMS).forEach(function (k) {
-    var it = ITEMS[k], f = state.facts[k];
+    var it = ITEMS[k], f = state.facts[pre + k];
     if (it.level > cur) return;
     if (!f || !f.n) fresh.push(it);
     else if (f.s === 3) { if (f.due === undefined || f.due <= state.Q) due.push(it); }
     else weak.push(it);
   });
-  weak.sort(function (x, y) { var fx = state.facts[key(x.t, x.n)], fy = state.facts[key(y.t, y.n)]; return (fy.w - fx.w) || (fx.s - fy.s); });
+  weak.sort(function (x, y) { var fx = state.facts[pre + key(x.t, x.n)], fy = state.facts[pre + key(y.t, y.n)]; return (fy.w - fx.w) || (fx.s - fy.s); });
   fresh.sort(function (x, y) { return y.level - x.level; });
   // up to 5 weak facts, up to 3 reviews, then new facts from the newest level; top up from whatever is left
   shuffle(due);
@@ -448,14 +517,17 @@ if (typeof document !== 'undefined') (function () {
   var KEY = 'times-tables-v1';
   var state, ses = null, q = null, peekKey = null, resetArmed = false;
 
-  function fresh() { return { facts: {}, done: {}, Q: 0, streak: null, dailyDay: null, best: null }; }
+  function fresh() { return { op: '', facts: {}, done: {}, Q: 0, streak: null, dailyDay: null, best: null, bestD: null }; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
   function load() {
     try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.facts && s.done && typeof s.Q === 'number') return s; } catch (e) {}
     return null;
   }
   function today() { return dayStr(new Date()); }
-  function factOf(k) { return state.facts[k] || { s: 0, w: 0, n: 0 }; }
+  function P() { return state.op === 'd' ? 'd' : ''; }
+  function dk(id) { return P() ? 'd:' + id : id; }
+  function lname(L) { return P() ? L.name.split(X).join(DIV) : L.name; }
+  function factOf(k) { return state.facts[P() + k] || { s: 0, w: 0, n: 0 }; }
 
   // ---------- home ----------
   function drawGrid(popKeys) {
@@ -466,7 +538,7 @@ if (typeof document !== 'undefined') (function () {
       html += '<tr><th scope="row">' + r + '</th>';
       for (c = 1; c <= 10; c++) {
         var k = key(r, c), s = factOf(k).s;
-        html += '<td><button type="button" class="cell s' + s + (popKeys && popKeys[k] ? ' pop' : '') + '" data-a="' + r + '" data-b="' + c + '" aria-label="' + r + ' times ' + c + ', ' + ['not started', 'started', 'nearly solid', 'solid'][s] + '">' + (s === 3 ? r * c : '') + '</button></td>';
+        html += '<td><button type="button" class="cell s' + s + (popKeys && popKeys[P() + k] ? ' pop' : '') + '" data-a="' + r + '" data-b="' + c + '" aria-label="' + (P() ? r * c + ' divided by ' + r : r + ' times ' + c) + ', ' + ['not started', 'started', 'nearly solid', 'solid'][s] + '">' + (s === 3 ? r * c : '') + '</button></td>';
       }
       html += '</tr>';
     }
@@ -476,11 +548,22 @@ if (typeof document !== 'undefined') (function () {
     var b = ev.target.closest ? ev.target.closest('.cell') : null; if (!b) return;
     var a = +b.dataset.a, c = +b.dataset.b, k = key(a, c), it = ITEMS[k], s = factOf(k).s;
     el('peek').hidden = false;
-    el('peek').textContent = a + ' ' + X + ' ' + c + ' = ' + a * c + '. ' + ['Not started yet.', 'Started.', 'Nearly solid.', 'Solid.'][s] + ' The trick: ' + work(it) + (otherWay(it) ? ' Another way: ' + otherWay(it) : '');
+    var status = ['Not started yet.', 'Started.', 'Nearly solid.', 'Solid.'][s];
+    el('peek').textContent = P()
+      ? a * c + ' ' + DIV + ' ' + a + ' = ' + c + '. ' + status + ' The trick: ' + dwork(a, c)
+      : a + ' ' + X + ' ' + c + ' = ' + a * c + '. ' + status + ' The trick: ' + work(it) + (otherWay(it) ? ' Another way: ' + otherWay(it) : '');
   });
 
   function drawHome(popKeys) {
-    var t = today(), n = streakShown(state.streak, t), solid = solidCount(state), cur = currentLevel(state);
+    var t = today(), n = streakShown(state.streak, t), solid = solidCount(state, P()), lv = levelsFor(P()), cur = currentLevel(state, P(), lv);
+    var bestNow = state[P() ? 'bestD' : 'best'];
+    el('opM').setAttribute('aria-pressed', P() ? 'false' : 'true'); el('opD').setAttribute('aria-pressed', P() ? 'true' : 'false');
+    el('gridText').textContent = P()
+      ? 'Every square is one division fact. Get it right three times, with other questions in between, and its square lights up gold. Each fact fills two squares, because 21 ' + DIV + ' 3 and 21 ' + DIV + ' 7 belong together.'
+      : 'Every square is one fact. Get a fact right three times, with other questions in between, and its square lights up gold. Each fact fills two squares, because 3 ' + X + ' 7 and 7 ' + X + ' 3 are the same.';
+    el('levelsText').textContent = P()
+      ? 'Dividing is times in reverse. Each level teaches the trick for dividing by one number.'
+      : 'Each level teaches one trick. Start at the top, or pick any table you want to practise.';
     el('streak').textContent = n ? n + (n === 1 ? ' day in a row' : ' days in a row') : 'Start your streak today';
     var doneToday = state.dailyDay === t;
     el('todayTitle').textContent = doneToday ? 'Done for today' : "Today's ten";
@@ -491,13 +574,13 @@ if (typeof document !== 'undefined') (function () {
     drawGrid(popKeys);
 
     var box = el('levels'); box.innerHTML = '';
-    LEVELS.forEach(function (L, i) {
+    lv.forEach(function (L, i) {
       var p = pool(L), got = p.filter(function (it) { return factOf(key(it.t, it.n)).s === 3; }).length;
       var b = document.createElement('button');
-      b.type = 'button'; b.className = 'level' + (state.done[L.id] ? ' done' : '') + (i === cur && !state.done[L.id] ? ' next' : '');
+      b.type = 'button'; b.className = 'level' + (state.done[dk(L.id)] ? ' done' : '') + (i === cur && !state.done[dk(L.id)] ? ' next' : '');
       b.innerHTML = '<b></b><span></span>';
-      b.firstChild.textContent = L.name;
-      b.lastChild.textContent = (i === cur && !state.done[L.id] ? 'Up next. ' : '') + got + ' of ' + p.length + ' solid';
+      b.firstChild.textContent = lname(L);
+      b.lastChild.textContent = (i === cur && !state.done[dk(L.id)] ? 'Up next. ' : '') + got + ' of ' + p.length + ' solid';
       b.addEventListener('click', function () { startLevel(i); });
       box.appendChild(b);
     });
@@ -505,15 +588,18 @@ if (typeof document !== 'undefined') (function () {
     var canSpeed = solid >= 10;
     el('speedBtn').disabled = !canSpeed;
     el('speedText').textContent = !canSpeed ? 'Light up 10 facts to unlock. You have ' + solid + '.'
-      : state.best ? 'Ten facts you know, against the clock. Your best: ' + state.best.toFixed(1) + ' seconds.' : 'Ten facts you know, against the clock.';
+      : bestNow ? 'Ten facts you know, against the clock. Your best: ' + bestNow.toFixed(1) + ' seconds.' : 'Ten facts you know, against the clock.';
 
-    var seen = Object.keys(ITEMS).filter(function (k) { var f = state.facts[k]; return f && f.n && (f.w > 0 || f.s < 3); });
-    seen.sort(function (x, y) { var fx = state.facts[x], fy = state.facts[y]; return (fy.w - fx.w) || (fx.s - fy.s); });
+    var seen = Object.keys(ITEMS).filter(function (k) { var f = state.facts[P() + k]; return f && f.n && (f.w > 0 || f.s < 3); });
+    seen.sort(function (x, y) { var fx = state.facts[P() + x], fy = state.facts[P() + y]; return (fy.w - fx.w) || (fx.s - fy.s); });
     var weak = el('weak'); weak.innerHTML = '';
     if (!seen.length) { var li0 = document.createElement('li'); li0.textContent = 'Nothing yet. This list fills in once your child has answered some questions.'; weak.appendChild(li0); }
     seen.slice(0, 5).forEach(function (k) {
       var it = ITEMS[k], li = document.createElement('li');
-      li.textContent = it.t + ' ' + X + ' ' + it.n + ' = ' + it.t * it.n + (state.facts[k].w ? ' (missed ' + state.facts[k].w + (state.facts[k].w === 1 ? ' time' : ' times') + ')' : ' (still learning)') + '. Remind them: ' + work(it);
+      var f = state.facts[P() + k], missed = f.w ? ' (missed ' + f.w + (f.w === 1 ? ' time' : ' times') + ')' : ' (still learning)';
+      li.textContent = P()
+        ? it.t * it.n + ' ' + DIV + ' ' + it.t + ' = ' + it.n + missed + '. Remind them: ' + dwork(it.t, it.n)
+        : it.t + ' ' + X + ' ' + it.n + ' = ' + it.t * it.n + missed + '. Remind them: ' + work(it);
       weak.appendChild(li);
     });
   }
@@ -532,12 +618,12 @@ if (typeof document !== 'undefined') (function () {
 
   // ---------- sessions ----------
   function startLevel(i) {
-    var L = LEVELS[i];
-    ses = { type: 'level', level: i, pool: pool(L), count: 0, row: 0, win: [], retry: [], last: null, solid0: solidCount(state) };
-    var c = CARDS[L.id];
-    el('cardTitle').textContent = 'The trick for ' + L.name;
+    var lv = levelsFor(P()), L = lv[i];
+    ses = { type: 'level', level: i, L: L, levels: lv, pool: pool(L), count: 0, row: 0, win: [], retry: [], last: null, solid0: solidCount(state, P()) };
+    var c = (P() ? DCARDS : CARDS)[L.id];
+    el('cardTitle').textContent = 'The trick for ' + lname(L);
     var html = '<p>' + c.idea + '</p><ul>' + c.ex.map(function (e) { return '<li>' + e + '</li>'; }).join('') + '</ul>';
-    if (c.dots.length) {
+    if (c.dots && c.dots.length) {
       html += '<div class="dots" aria-hidden="true">' + c.dots.map(function (d) {
         var rows = '';
         d[1].forEach(function (cnt, gi) { for (var r = 0; r < cnt; r++) { rows += '<div class="dotrow' + (gi % 2 ? ' alt' : '') + '">'; for (var x = 0; x < d[0]; x++) rows += '<i></i>'; rows += '</div>'; } });
@@ -550,7 +636,7 @@ if (typeof document !== 'undefined') (function () {
     begin();
   }
   function startDaily() {
-    ses = { type: 'daily', queue: pickDaily(state), count: 0, right: 0, solid0: solidCount(state), lit: {} };
+    ses = { type: 'daily', queue: pickDaily(state, P()), count: 0, right: 0, solid0: solidCount(state, P()), lit: {} };
     el('card').hidden = true; el('bar').hidden = false;
     begin();
   }
@@ -577,29 +663,39 @@ if (typeof document !== 'undefined') (function () {
     if (ses.type === 'level') it = pickLevelItem();
     else { if (ses.count >= ses.queue.length) return finishSession(); it = ses.queue[ses.count]; }
     var k = key(it.t, it.n), f = factOf(k);
-    var a = it.t, b = it.n;
-    if (it.turn || (!it.sq && Math.random() < 0.5)) { a = it.n; b = it.t; }
     var mode = ses.type === 'speed' ? 'type' : ses.type === 'level' ? (ses.row >= 2 ? 'type' : 'choose') : (f.s >= 1 ? 'type' : 'choose');
-    q = { it: it, k: k, a: a, b: b, p: a * b, mode: mode, hinted: false, done: false };
+    q = { it: it, k: P() + k, mode: mode, hinted: false, done: false };
+    if (P()) {
+      var prod = it.t * it.n, by = (ses.type === 'level' && ses.L.tables) ? it.t : (Math.random() < 0.5 ? it.t : it.n), quo = prod / by;
+      q.ans = quo; q.text = prod + ' ' + DIV + ' ' + by; q.fact = q.text + ' = ' + quo;
+      q.work = dwork(by, quo); q.hint = dhint(by, prod); q.other = ''; q.distr = ddistractors(by, quo);
+      q.tip = function (v) { return dtip(by, quo, v); };
+    } else {
+      var a = it.t, b = it.n;
+      if (it.turn || (!it.sq && Math.random() < 0.5)) { a = it.n; b = it.t; }
+      q.ans = a * b; q.text = a + ' ' + X + ' ' + b; q.fact = q.text + ' = ' + q.ans;
+      q.work = work(it); q.hint = hintFor(it); q.other = otherWay(it); q.distr = distractors(a, b);
+      q.tip = function (v) { return SLIP_TIPS[slipKind(a, b, v)] || ''; };
+    }
     if (ses.type === 'level') ses.last = k;
 
-    el('where').textContent = ses.type === 'level' ? 'Level ' + (ses.level + 1) + ': ' + LEVELS[ses.level].name
+    el('where').textContent = ses.type === 'level' ? 'Level ' + (ses.level + 1) + ': ' + lname(ses.levels[ses.level])
       : (ses.type === 'daily' ? "Today's ten" : 'Beat your time') + ': ' + (ses.count + 1) + ' of ' + ses.queue.length;
     if (ses.type !== 'level') el('barFill').style.width = (100 * ses.count / ses.queue.length) + '%';
-    el('ask').textContent = a + ' ' + X + ' ' + b;
+    el('ask').textContent = q.text;
     el('feedback').hidden = true; el('hint').hidden = true; el('next').hidden = true;
     el('hintBtn').hidden = ses.type === 'speed';
     el('options').hidden = mode !== 'choose'; el('typeForm').hidden = mode !== 'type';
     if (mode === 'choose') {
       var box = el('options'); box.innerHTML = '';
-      shuffle([q.p].concat(distractors(a, b))).forEach(function (v) {
+      shuffle([q.ans].concat(q.distr)).forEach(function (v) {
         var btn = document.createElement('button');
         btn.type = 'button'; btn.className = 'opt'; btn.textContent = v;
-        if (v === q.p) btn.dataset.ok = '1';
+        if (v === q.ans) btn.dataset.ok = '1';
         btn.addEventListener('click', function () {
           var all = box.children;
           for (var i = 0; i < all.length; i++) { all[i].disabled = true; if (all[i].dataset.ok) all[i].classList.add('is-right'); }
-          if (v !== q.p) btn.classList.add('is-wrong');
+          if (v !== q.ans) btn.classList.add('is-wrong');
           answered(v);
         });
         box.appendChild(btn);
@@ -616,7 +712,7 @@ if (typeof document !== 'undefined') (function () {
     var s = el('answer').value.trim(); if (!/^\d{1,3}$/.test(s)) return;
     var v = parseInt(s, 10);
     if (ses.type === 'speed') {
-      if (v !== q.p) { ses.slips++; el('feedback').className = 'feedback bad'; el('feedback').innerHTML = '<p class="verdict">Not yet. Try again.</p>'; el('feedback').hidden = false; el('answer').value = ''; el('answer').focus(); return; }
+      if (v !== q.ans) { ses.slips++; el('feedback').className = 'feedback bad'; el('feedback').innerHTML = '<p class="verdict">Not yet. Try again.</p>'; el('feedback').hidden = false; el('answer').value = ''; el('answer').focus(); return; }
       ses.count++; ask(false); return;
     }
     el('answer').disabled = true; el('checkBtn').disabled = true;
@@ -626,25 +722,25 @@ if (typeof document !== 'undefined') (function () {
   el('hintBtn').addEventListener('click', function () {
     if (!q || q.done) return;
     q.hinted = true; el('hintBtn').hidden = true;
-    el('hint').textContent = 'The trick: ' + hintFor(q.it); el('hint').hidden = false;
+    el('hint').textContent = 'The trick: ' + q.hint; el('hint').hidden = false;
   });
 
   function answered(v) {
-    var ok = v === q.p, fact = q.a + ' ' + X + ' ' + q.b + ' = ' + q.p, html = '', note = '';
+    var ok = v === q.ans, fact = q.fact, html = '', note = '';
     q.done = true; el('hintBtn').hidden = true;
     var m = markFact(state, q.k, ok, q.hinted);
     ses.count++;
 
     if (ok) {
       html += '<p class="verdict">✓ Yes! ' + fact + '.</p>';
-      if (q.hinted) html += '<p>' + work(q.it) + '</p>';
+      if (q.hinted) html += '<p>' + q.work + '</p>';
       if (m.after === 3 && m.before < 3) { note = 'That fact is now solid. Its square is gold.'; if (ses.lit) ses.lit[q.k] = 1; }
     } else {
       html += '<p class="verdict">✗ Not quite. ' + fact + '.</p>';
-      var kind = slipKind(q.a, q.b, v);
-      if (SLIP_TIPS[kind]) html += '<p>' + SLIP_TIPS[kind] + '</p>';
-      html += '<p><strong>The trick:</strong> ' + work(q.it) + '</p>';
-      if (otherWay(q.it)) html += '<p><strong>Another way:</strong> ' + otherWay(q.it) + '</p>';
+      var tip = q.tip(v);
+      if (tip) html += '<p>' + tip + '</p>';
+      html += '<p><strong>The trick:</strong> ' + q.work + '</p>';
+      if (q.other) html += '<p><strong>Another way:</strong> ' + q.other + '</p>';
     }
 
     if (ses.type === 'daily') { if (ok) ses.right++; }
@@ -652,41 +748,41 @@ if (typeof document !== 'undefined') (function () {
       if (!ok) { ses.row = 0; ses.retry.push({ it: q.it, at: ses.count + 2 }); if (!note) note = 'You will see this one again in a moment.'; }
       else if (!q.hinted) { ses.row++; if (ses.row === 2 && q.mode === 'choose') note = note || 'Two in a row. Next you type the answer yourself.'; }
       if (!ok || !q.hinted) { ses.win.push(ok); if (ses.win.length > 8) ses.win.shift(); }
-      var L = LEVELS[ses.level];
-      if (!state.done[L.id] && ses.win.length === 8 && ses.win.filter(Boolean).length >= 7) {
-        state.done[L.id] = true; ses.passed = true;
-        note = 'Level passed: 7 of your last 8 right.' + (ses.level < LEVELS.length - 1 ? ' Next up: ' + LEVELS[ses.level + 1].name + '.' : ' That was the last level!');
+      var L = ses.L;
+      if (!state.done[dk(L.id)] && ses.win.length === 8 && ses.win.filter(Boolean).length >= 7) {
+        state.done[dk(L.id)] = true; ses.passed = true;
+        note = 'Level passed: 7 of your last 8 right.' + (ses.level < ses.levels.length - 1 ? ' Next up: ' + lname(ses.levels[ses.level + 1]) + '.' : ' That was the last level!');
       }
     }
     if (note) html += '<p class="note">' + note + '</p>';
     var fb = el('feedback'); fb.className = 'feedback ' + (ok ? 'good' : 'bad'); fb.innerHTML = html; fb.hidden = false;
     save();
-    el('next').textContent = ses.passed && ses.level < LEVELS.length - 1 ? 'Go to the next level' : 'Next';
+    el('next').textContent = ses.passed && ses.level < ses.levels.length - 1 ? 'Go to the next level' : 'Next';
     el('next').hidden = false; el('next').focus();
   }
 
   el('next').addEventListener('click', function () {
-    if (ses.type === 'level' && ses.passed && ses.level < LEVELS.length - 1) return startLevel(ses.level + 1);
+    if (ses.type === 'level' && ses.passed && ses.level < ses.levels.length - 1) return startLevel(ses.level + 1);
     ask(false);
   });
 
   function finishSession() {
-    var body = '';
+    var body = '', bk = P() ? 'bestD' : 'best';
     if (ses.type === 'daily') {
       var t = today(), first = state.dailyDay !== t;
       if (first) { state.streak = streakAfter(state.streak, t); state.dailyDay = t; }
       var lit = Object.keys(ses.lit).length, n = streakShown(state.streak, t);
       el('sumTitle').textContent = first ? 'Done for today!' : 'Extra ten done!';
       body += '<p>You got <strong>' + ses.right + ' of ' + ses.queue.length + '</strong> right.</p>';
-      body += '<p>' + (lit ? lit + (lit === 1 ? ' new fact' : ' new facts') + ' turned gold. ' : '') + (55 - solidCount(state)) + ' of 55 facts left.</p>';
+      body += '<p>' + (lit ? lit + (lit === 1 ? ' new fact' : ' new facts') + ' turned gold. ' : '') + (55 - solidCount(state, P())) + ' of 55 facts left.</p>';
       body += '<p class="note">' + n + (n === 1 ? ' day' : ' days') + ' in a row. Come back tomorrow to keep it going.</p>';
       ses.pop = ses.lit;
     } else {
-      var secs = (Date.now() - ses.t0) / 1000, best = !state.best || secs < state.best;
+      var secs = (Date.now() - ses.t0) / 1000, best = !state[bk] || secs < state[bk];
       el('sumTitle').textContent = best ? 'New best time!' : 'Finished!';
       body += '<p>Ten facts in <strong>' + secs.toFixed(1) + ' seconds</strong>' + (ses.slips ? ', with ' + ses.slips + (ses.slips === 1 ? ' slip' : ' slips') : '') + '.</p>';
-      body += '<p>' + (best ? (state.best ? 'Your old best was ' + state.best.toFixed(1) + ' seconds.' : 'That is your first time on the board.') : 'Your best is ' + state.best.toFixed(1) + ' seconds.') + '</p>';
-      if (best) state.best = secs;
+      body += '<p>' + (best ? (state[bk] ? 'Your old best was ' + state[bk].toFixed(1) + ' seconds.' : 'That is your first time on the board.') : 'Your best is ' + state[bk].toFixed(1) + ' seconds.') + '</p>';
+      if (best) state[bk] = secs;
     }
     save();
     el('barFill').style.width = '100%';
@@ -699,6 +795,9 @@ if (typeof document !== 'undefined') (function () {
   el('back').addEventListener('click', goHome);
   el('sumHome').addEventListener('click', goHome);
   el('todayBtn').addEventListener('click', startDaily);
+  function setOp(o) { state.op = o; save(); el('peek').hidden = true; drawHome(); }
+  el('opM').addEventListener('click', function () { setOp(''); });
+  el('opD').addEventListener('click', function () { setOp('d'); });
   el('speedBtn').addEventListener('click', startSpeed);
 
   state = load() || fresh();
