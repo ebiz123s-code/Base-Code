@@ -4,4 +4,4 @@ Ideas that have been explored far enough to judge, but not committed to. Each en
 
 | Idea | Status | Entry |
 | --- | --- | --- |
-| Adaptive maths quiz for parents, by grade | Prototype built for one topic (factoring). Not started as a product. | [adaptive-maths-quiz.md](adaptive-maths-quiz.md) |
+| Maths skill trainer for parents and children, starting with times tables | Direction agreed and version 1 outlined. Factoring prototype built. Times tables not built yet. | [adaptive-maths-quiz.md](adaptive-maths-quiz.md) |

@@ -3,6 +3,98 @@
 **Status:** to consider. A working prototype exists for one topic (factoring). Nothing has been built as a product.
 **Recorded:** 26 November 2026
 
+## Agreed direction (26 November 2026)
+
+The first product is a times tables skill trainer, not a grade-based course. Grades are dropped for now. The sections further down record the earlier thinking and still apply where they do not conflict with this one.
+
+**Agreed**
+
+1. Facts up to 10 × 10, with 11 and 12 as a bonus level.
+2. Division comes in the second version, as the same facts in reverse.
+3. Aimed at children with their parents.
+4. The free version launches first on its own. Tier 2 follows once people are using it.
+
+**Tiers as agreed**
+
+- **Tier 1, free, no sign-up, no AI.** As much as possible goes here. Progress is saved on the device only.
+- **Tier 2, paid, the memory layer.** Saved progress, a parent sign-on and a child sign-on that show different things, and progress graphed for the parent. Pricing is the critical decision; to be tested per family with a free trial.
+- **Tier 3, paid, premium, with usage limits.** AI features such as practice from a homework photo. Held until there are more skills than times tables.
+
+**Why times tables first:** no grade or curriculum mapping is needed, the audience is wide, later maths depends on it, and it suits generated questions with predictable mistakes. The catch is a crowded field of speed-drill apps (not yet surveyed). The difference here is teaching strategies and showing the parent which facts are weak.
+
+### Outline of version 1 (free)
+
+**Strategies taught**
+
+| Table | Strategy | Example |
+| --- | --- | --- |
+| Any | Turn it around | 7 × 3 = 3 × 7 |
+| ×10 | Each digit moves one place left | 6 × 10 = 60 |
+| ×5 | Half of the ×10 answer | 5 × 8 = half of 80 = 40 |
+| ×2 | Double | 2 × 7 = 14 |
+| ×4 | Double, then double again | 4 × 7 = 14, then 28 |
+| ×8 | Double three times | 8 × 6 = 12, 24, 48 |
+| ×3 | Double, plus one more lot | 3 × 7 = 14 + 7 = 21 |
+| ×6 | The ×5 answer plus one more lot | 6 × 7 = 35 + 7 = 42 |
+| ×7 | The ×5 answer plus the ×2 answer | 7 × 8 = 40 + 16 = 56 |
+| ×9 | The ×10 answer minus one lot | 9 × 7 = 70 − 7 = 63 |
+| Squares | Learn as anchors, then step from them | 7 × 8 = 49 + 7 = 56 |
+
+With turning facts around and ×1, ×2, ×5 and ×10 known, 21 facts remain up to 10 × 10. With the ×9 strategy, 15 remain.
+
+**Levels, in order**
+
+1. ×1 and ×10
+2. ×2
+3. ×5
+4. Turn it around (mixed facts from levels 1 to 3, both ways round)
+5. ×4
+6. ×9
+7. ×3
+8. ×6
+9. ×8
+10. Squares
+11. ×7
+12. Mixed, all facts
+13. Bonus: ×11 and ×12
+
+**Each level**
+
+- Opens with a strategy card: the idea, a dot or box picture showing why it works, and two worked examples.
+- Starts as multiple choice, then moves to typing the answer after two right in a row.
+- A hint shows the strategy applied to that fact, not the answer.
+- A miss shows the answer, the strategy for it, and what kind of slip it was.
+
+**Slips tracked:** neighbouring fact (one lot out), a known mix-up (6 × 7, 6 × 8, 7 × 8, 6 × 9), adding instead of multiplying, and a turned-around fact the child knows one way but not the other.
+
+**The grid**
+
+- A 10 × 10 grid where each square lights up as that fact becomes solid.
+- A fact is solid after it is answered correctly, unaided, on three separate occasions.
+- A "facts left" counter beside it.
+- Solid facts come back for review at growing intervals and go dim again if missed.
+
+**Fun layer**
+
+- A daily set of ten questions with a clear "done for today".
+- A streak with one free skip day a week.
+- "Beat your own time" for solid facts only, kept apart from the learning levels.
+
+**Parent corner (on the device)**
+
+- The grid, the weakest five facts, and the strategy to remind the child of for each.
+- A note that progress is saved on this device only.
+
+**Built as:** one self-contained page with no sign-up and no server, like the factoring quiz.
+
+### What comes after version 1
+
+1. Try version 1 with three to five children and watch where they get stuck or bored.
+2. Version 2: division as the same facts in reverse.
+3. Tier 2: parent and child sign-ons, saved progress, the grid over time.
+4. More skills, each one building on the last: multiplying larger numbers by breaking them apart, fractions, negative numbers, simple equations, then factoring (already prototyped).
+5. Tier 3 once there are enough skills for the homework photo to be useful.
+
 ## The idea in one paragraph
 
 A practice tool that teaches one maths skill at a time, explains why each method works, notices which specific mistake a child keeps making, and tells the parent about it in plain words. It would be organised by grade so a parent can pick their child's year and start.
