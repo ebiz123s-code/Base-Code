@@ -1,0 +1,295 @@
+<title>Factoring Step by Step</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: a single printable column, like a class handout. Each method is one block:
+   when to use it, the steps, worked examples set on a ruled "working" panel. */
+:root {
+  --bg: #fbfcfe;
+  --panel: #f1f5fb;
+  --ink: #17212f;
+  --muted: #55627a;
+  --rule: #cfd8e6;
+  --accent: #1d4f9e;
+  --check: #1f6b45;
+  --warn-bg: #fff6dd;
+  --warn-ink: #6b4a00;
+  --font-text: "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-math: "STIX Two Text", "Cambria Math", "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121823; --panel: #1b2433; --ink: #e6ebf3; --muted: #9eabc0; --rule: #33405a;
+    --accent: #8bb4f2; --check: #7fd0a2; --warn-bg: #3a2f10; --warn-ink: #f2d88a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121823; --panel: #1b2433; --ink: #e6ebf3; --muted: #9eabc0; --rule: #33405a;
+  --accent: #8bb4f2; --check: #7fd0a2; --warn-bg: #3a2f10; --warn-ink: #f2d88a;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 18px;
+  line-height: 1.55;
+}
+.page {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding-block: 2.5rem 4rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+h1, h2 { text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: 2.3rem; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.45rem; font-weight: 700; display: flex; gap: 0.6rem; align-items: baseline; }
+h2 .n {
+  font-family: var(--font-math); font-weight: 600; color: var(--accent);
+  border-bottom: 2px solid var(--accent); padding: 0 0.15rem; flex: none;
+}
+p { margin: 0; }
+header { display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 3px double var(--rule); padding-bottom: 1.5rem; }
+section { display: flex; flex-direction: column; gap: 0.9rem; }
+.m { font-family: var(--font-math); font-size: 1.08em; white-space: nowrap; }
+sup { font-size: 0.7em; line-height: 0; }
+ol { margin: 0; padding-left: 1.4rem; display: flex; flex-direction: column; gap: 0.3rem; }
+
+.work {
+  background: var(--panel);
+  border-left: 3px solid var(--accent);
+  padding: 0.9rem 1.1rem;
+  display: flex; flex-direction: column; gap: 0.45rem;
+  min-width: 0;
+}
+.work .q { font-weight: 600; }
+.line { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 0.2rem 1.25rem; align-items: baseline; }
+.line .m { white-space: normal; }
+.line .why { color: var(--muted); font-size: 0.93em; }
+.ans { color: var(--check); font-weight: 600; }
+.tip { background: var(--warn-bg); color: var(--warn-ink); padding: 0.65rem 1rem; }
+.tip strong { font-weight: 700; }
+.because { border: 1px solid var(--rule); padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.45rem; min-width: 0; }
+.because .label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.box { border-collapse: collapse; font-family: var(--font-math); font-size: 1.1em; align-self: flex-start; }
+.box td, .box th { padding: 0.45rem 1rem; text-align: center; }
+.box td { border: 1.5px solid var(--ink); }
+.box th { font-weight: 600; color: var(--accent); }
+
+.practice, .answers { columns: 2; column-gap: 2.5rem; padding-left: 1.6rem; display: block; }
+.practice li, .answers li { break-inside: avoid; margin-bottom: 0.55rem; }
+
+@media (max-width: 520px) {
+  body { font-size: 16px; }
+  h1 { font-size: 1.8rem; }
+  .line { grid-template-columns: minmax(0, 1fr); }
+  .practice, .answers { columns: 1; }
+}
+
+@media print {
+  :root, :root[data-theme="dark"], :root:not([data-theme="light"]) {
+    --bg: #ffffff; --panel: #f3f5f9; --ink: #000000; --muted: #444b57; --rule: #b9c1ce;
+    --accent: #1d4f9e; --check: #1f6b45; --warn-bg: #f6f1df; --warn-ink: #3d2c00;
+    color-scheme: light;
+  }
+  body { font-size: 12pt; }
+  .page { max-width: none; padding-block: 0; gap: 1.4rem; }
+  h2 { break-after: avoid; }
+  .work, .tip, .because { break-inside: avoid; }
+  .work, .tip { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .newpage { break-before: page; }
+}
+</style>
+
+<div class="page">
+
+<header>
+  <h1>Factoring Step by Step</h1>
+  <p>Factoring is multiplying in reverse. You start with an answer and find what was multiplied to make it.</p>
+  <p><span class="m">3 × 4 = 12</span>, so 12 factors into <span class="m">3 × 4</span>.<br>
+     <span class="m">2(x + 3) = 2x + 6</span>, so <span class="m">2x + 6</span> factors into <span class="m">2(x + 3)</span>.</p>
+  <p><strong>Why bother?</strong> A factored expression is easier to work with. It lets you simplify fractions, solve equations, and see what an expression is built from.</p>
+  <p><strong>To check any answer:</strong> multiply it back out. You should get what you started with.</p>
+  <p>Each section below has a <strong>Why it works</strong> box. Read it first. Once you see the multiplying, the factoring is the same thing done backwards.</p>
+</header>
+
+<section>
+  <h2>Three questions to ask</h2>
+  <ol>
+    <li><strong>Do all the terms share something?</strong> Take it out. (Section 2)</li>
+    <li><strong>Is it a square minus a square?</strong> Use two brackets. (Section 3)</li>
+    <li><strong>Are there three terms starting with <span class="m">x<sup>2</sup></span>?</strong> Find two numbers. (Section 4)</li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="n">1</span>Numbers</h2>
+  <p>Keep dividing by the smallest number that goes in (2, then 3, then 5, …) until you cannot divide any more.</p>
+  <div class="because">
+    <p class="label">Why it works</p>
+    <p>Every whole number is built by multiplying smaller building blocks, called primes (2, 3, 5, 7, …). Dividing pulls the blocks out one at a time.</p>
+    <p><strong>Why start with the smallest?</strong> It keeps you organised, so you never miss a block.</p>
+    <p><strong>Why stop?</strong> When nothing smaller divides in, you have reached a single block.</p>
+  </div>
+  <div class="work">
+    <p class="q">Factor 12</p>
+    <div class="line"><span class="m">12 ÷ 2 = 6</span><span class="why">12 is even, so divide by 2</span></div>
+    <div class="line"><span class="m">6 ÷ 2 = 3</span><span class="why">divide by 2 again</span></div>
+    <div class="line"><span class="m ans">12 = 2 × 2 × 3</span><span class="why">3 cannot be divided, so stop</span></div>
+  </div>
+  <div class="work">
+    <p class="q">Factor 30</p>
+    <div class="line"><span class="m">30 ÷ 2 = 15</span><span class="why">divide by 2</span></div>
+    <div class="line"><span class="m">15 ÷ 3 = 5</span><span class="why">2 does not go in, so try 3</span></div>
+    <div class="line"><span class="m ans">30 = 2 × 3 × 5</span><span class="why"></span></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">2</span>Take out what is shared</h2>
+  <div class="because">
+    <p class="label">Why it works</p>
+    <p>A number in front of a bracket multiplies everything inside: <span class="m">3(2x + 3)</span> means <span class="m">3 × 2x</span> plus <span class="m">3 × 3</span>, which is <span class="m">6x + 9</span>.</p>
+    <p>Factoring runs that backwards. You spot the 3 hiding in both terms and pull it back out to the front.</p>
+    <p><strong>Why always try this first?</strong> It makes the numbers smaller, and smaller numbers make every later step easier.</p>
+  </div>
+  <ol>
+    <li>Find the biggest number or letter that goes into every term.</li>
+    <li>Write it in front of a bracket.</li>
+    <li>Divide each term by it. Put the results inside the bracket.</li>
+  </ol>
+  <div class="work">
+    <p class="q">Factor <span class="m">6x + 9</span></p>
+    <div class="line"><span class="m">3 goes into 6 and 9</span><span class="why">this is what they share</span></div>
+    <div class="line"><span class="m ans">3(2x + 3)</span><span class="why">6x ÷ 3 = 2x and 9 ÷ 3 = 3</span></div>
+    <div class="line"><span class="m">Check: 3 × 2x + 3 × 3 = 6x + 9 ✓</span><span class="why">multiply back out</span></div>
+  </div>
+  <div class="work">
+    <p class="q">Factor <span class="m">x<sup>2</sup> + 5x</span></p>
+    <div class="line"><span class="m">both terms have an x</span><span class="why">this is what they share</span></div>
+    <div class="line"><span class="m ans">x(x + 5)</span><span class="why">x<sup>2</sup> ÷ x = x and 5x ÷ x = 5</span></div>
+  </div>
+  <div class="work">
+    <p class="q">Factor <span class="m">4x<sup>2</sup> + 8x</span></p>
+    <div class="line"><span class="m">both share 4 and x</span><span class="why">so take out 4x</span></div>
+    <div class="line"><span class="m ans">4x(x + 2)</span><span class="why">4x<sup>2</sup> ÷ 4x = x and 8x ÷ 4x = 2</span></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">3</span>A square minus a square</h2>
+  <p>Use this when there are two terms, both are squares (like <span class="m">x<sup>2</sup></span>, 4, 9, 16, 25), and there is a minus between them.</p>
+  <div class="because">
+    <p class="label">Why it works</p>
+    <p>Multiply <span class="m">(x − 5)(x + 5)</span> and you get <span class="m">x<sup>2</sup> + 5x − 5x − 25</span>.</p>
+    <p>The <span class="m">+5x</span> and <span class="m">−5x</span> cancel each other, leaving just <span class="m">x<sup>2</sup> − 25</span>.</p>
+    <p><strong>Why one minus and one plus?</strong> That is what makes the middle cancel. So when you see a square minus a square with no middle term, you know it came from brackets like these.</p>
+  </div>
+  <ol>
+    <li>Take the square root of each term.</li>
+    <li>Write two brackets. Put a minus in one and a plus in the other.</li>
+  </ol>
+  <div class="work">
+    <p class="q">Factor <span class="m">x<sup>2</sup> − 9</span></p>
+    <div class="line"><span class="m">roots: x and 3</span><span class="why">because 3 × 3 = 9</span></div>
+    <div class="line"><span class="m ans">(x − 3)(x + 3)</span><span class="why">one minus, one plus</span></div>
+    <div class="line"><span class="m">Check: x<sup>2</sup> + 3x − 3x − 9 = x<sup>2</sup> − 9 ✓</span><span class="why">the middle cancels</span></div>
+  </div>
+  <div class="work">
+    <p class="q">Factor <span class="m">x<sup>2</sup> − 49</span></p>
+    <div class="line"><span class="m">roots: x and 7</span><span class="why">because 7 × 7 = 49</span></div>
+    <div class="line"><span class="m ans">(x − 7)(x + 7)</span><span class="why"></span></div>
+  </div>
+  <p class="tip"><strong>Watch for:</strong> this only works with a minus. <span class="m">x<sup>2</sup> + 9</span> cannot be factored, because no pair of brackets makes the middle cancel and still ends in a plus.</p>
+</section>
+
+<section class="newpage">
+  <h2><span class="n">4</span>Three terms starting with x<sup>2</sup></h2>
+  <div class="because">
+    <p class="label">Why it works</p>
+    <p>Multiply <span class="m">(x + 2)(x + 3)</span> using a box. Each square is its row times its column.</p>
+    <table class="box">
+      <tr><th></th><th>x</th><th>+3</th></tr>
+      <tr><th>x</th><td>x<sup>2</sup></td><td>3x</td></tr>
+      <tr><th>+2</th><td>2x</td><td>6</td></tr>
+    </table>
+    <p>Add the four squares: <span class="m">x<sup>2</sup> + 3x + 2x + 6 = x<sup>2</sup> + 5x + 6</span>.</p>
+    <p>Look where the numbers came from. The middle 5 is <span class="m">2 + 3</span>. The last 6 is <span class="m">2 × 3</span>.</p>
+    <p><strong>That is why you hunt for two numbers that add to the middle and multiply to the end.</strong> You are finding the 2 and the 3 that were in the brackets.</p>
+  </div>
+  <ol>
+    <li>Find two numbers that <strong>multiply</strong> to give the last number and <strong>add</strong> to give the middle number.</li>
+    <li>Put one in each bracket: <span class="m">(x &nbsp;&nbsp;&nbsp;)(x &nbsp;&nbsp;&nbsp;)</span>.</li>
+  </ol>
+  <div class="work">
+    <p class="q">Factor <span class="m">x<sup>2</sup> + 5x + 6</span></p>
+    <div class="line"><span class="m">2 × 3 = 6 and 2 + 3 = 5</span><span class="why">multiply to 6, add to 5</span></div>
+    <div class="line"><span class="m ans">(x + 2)(x + 3)</span><span class="why"></span></div>
+  </div>
+  <div class="work">
+    <p class="q">Factor <span class="m">x<sup>2</sup> − 6x + 8</span></p>
+    <div class="line"><span class="m">−2 × −4 = 8 and −2 − 4 = −6</span><span class="why">the middle is minus, so both numbers are minus</span></div>
+    <div class="line"><span class="m ans">(x − 2)(x − 4)</span><span class="why">minus × minus gives the plus 8</span></div>
+    <div class="line"><span class="m">Check: x<sup>2</sup> − 4x − 2x + 8 = x<sup>2</sup> − 6x + 8 ✓</span><span class="why">multiply back out</span></div>
+  </div>
+  <div class="work">
+    <p class="q">Factor <span class="m">x<sup>2</sup> + 3x − 10</span></p>
+    <div class="line"><span class="m">5 × −2 = −10 and 5 − 2 = 3</span><span class="why">the last number is minus, and only plus × minus gives a minus</span></div>
+    <div class="line"><span class="m ans">(x + 5)(x − 2)</span><span class="why"></span></div>
+  </div>
+  <p class="tip"><strong>Tip:</strong> write down the pairs that multiply to the last number, then pick the pair that adds to the middle number. For 6 the pairs are 1 and 6, or 2 and 3.</p>
+</section>
+
+<section>
+  <h2><span class="n">5</span>Two steps in one question</h2>
+  <p>Sometimes you take out what is shared, and the bracket can then be factored again.</p>
+  <div class="because">
+    <p class="label">Why this order</p>
+    <p><span class="m">2x<sup>2</sup> − 18</span> does not look like a square minus a square. Take out the 2 and the pattern <span class="m">x<sup>2</sup> − 9</span> appears. Taking out what is shared first uncovers the easier problem underneath.</p>
+  </div>
+  <div class="work">
+    <p class="q">Factor <span class="m">2x<sup>2</sup> − 18</span></p>
+    <div class="line"><span class="m">2(x<sup>2</sup> − 9)</span><span class="why">both terms share 2</span></div>
+    <div class="line"><span class="m ans">2(x − 3)(x + 3)</span><span class="why">a square minus a square</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Practice</h2>
+  <ol class="practice">
+    <li><span class="m">5x + 10</span></li>
+    <li><span class="m">x<sup>2</sup> + 7x</span></li>
+    <li><span class="m">6x<sup>2</sup> + 9x</span></li>
+    <li><span class="m">x<sup>2</sup> − 16</span></li>
+    <li><span class="m">x<sup>2</sup> − 100</span></li>
+    <li><span class="m">x<sup>2</sup> + 7x + 10</span></li>
+    <li><span class="m">x<sup>2</sup> − 8x + 15</span></li>
+    <li><span class="m">x<sup>2</sup> + 2x − 15</span></li>
+    <li><span class="m">x<sup>2</sup> − x − 12</span></li>
+    <li><span class="m">3x<sup>2</sup> − 12</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2>Answers</h2>
+  <ol class="answers">
+    <li><span class="m">5(x + 2)</span></li>
+    <li><span class="m">x(x + 7)</span></li>
+    <li><span class="m">3x(2x + 3)</span></li>
+    <li><span class="m">(x − 4)(x + 4)</span></li>
+    <li><span class="m">(x − 10)(x + 10)</span></li>
+    <li><span class="m">(x + 2)(x + 5)</span></li>
+    <li><span class="m">(x − 3)(x − 5)</span></li>
+    <li><span class="m">(x + 5)(x − 3)</span></li>
+    <li><span class="m">(x − 4)(x + 3)</span></li>
+    <li><span class="m">3(x − 2)(x + 2)</span></li>
+  </ol>
+</section>
+
+</div>
