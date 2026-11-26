@@ -88,6 +88,23 @@ Everything is one self-contained HTML page. No server, no question bank.
 **Where the same approach fits:** topics where skills build in a clear order and mistakes are predictable. Fractions, negative numbers, solving linear equations, expanding brackets, percentages, exponent rules.
 **Where it fits less well:** word problems and proofs, where the difficulty is setting the problem up.
 
+## Making it fun
+
+Children dropping off is the biggest risk, so this matters more than extra topics. Ideas, strongest first:
+
+1. **Short sessions with a clear finish.** Five questions a day, then "done for today". A visible end is easier to start than an endless quiz.
+2. **A streak the child owns.** Days in a row, with one free "skip day" a week so a missed day does not wipe it out.
+3. **Beat your own best, not other children.** Longest run of right answers, fastest clean level. No leaderboards against classmates.
+4. **Progress you can see.** A map or path where each skill is a stop, so finishing a level visibly moves the child forward.
+5. **A puzzle wrapper.** Each right answer reveals a piece of a picture, opens a lock on a code, or moves a character. The maths stays the same; the reason to answer changes.
+6. **Boss questions.** The last question of a level is a harder two-step one, presented as the challenge that unlocks the next level.
+7. **Parent and child together.** A two-player mode where the parent answers too, or a weekly "challenge your parent" set. This also fits selling to the parent.
+8. **Choice.** Let the child pick the theme or which skill to practise next from two options.
+
+Things to avoid: timers on every question (they raise anxiety and reward guessing), penalties for wrong answers, and rewards so large the child clicks through to get them without reading the explanation.
+
+Cheapest to try first: 1, 2 and 5. They need no accounts and fit in the single page.
+
 ## Is it a product?
 
 Possibly, with a narrow angle.
