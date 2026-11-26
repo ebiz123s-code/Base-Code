@@ -1,0 +1,724 @@
+<title>Factoring Quiz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: one narrow column. Status strip on top, one question card, feedback under it. */
+:root {
+  --bg: #fbfcfe;
+  --panel: #f1f5fb;
+  --ink: #17212f;
+  --muted: #55627a;
+  --rule: #cfd8e6;
+  --accent: #1d4f9e;
+  --on-accent: #ffffff;
+  --good: #1f6b45;
+  --good-bg: #e3f3ea;
+  --bad: #a3342b;
+  --bad-bg: #fbe9e6;
+  --hint-bg: #fff6dd;
+  --hint-ink: #6b4a00;
+  --font-text: "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-math: "STIX Two Text", "Cambria Math", "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121823; --panel: #1b2433; --ink: #e6ebf3; --muted: #9eabc0; --rule: #33405a;
+    --accent: #8bb4f2; --on-accent: #0f1622;
+    --good: #7fd0a2; --good-bg: #173326; --bad: #f0a097; --bad-bg: #3b1d1a;
+    --hint-bg: #3a2f10; --hint-ink: #f2d88a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121823; --panel: #1b2433; --ink: #e6ebf3; --muted: #9eabc0; --rule: #33405a;
+  --accent: #8bb4f2; --on-accent: #0f1622;
+  --good: #7fd0a2; --good-bg: #173326; --bad: #f0a097; --bad-bg: #3b1d1a;
+  --hint-bg: #3a2f10; --hint-ink: #f2d88a;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 18px;
+  line-height: 1.5;
+}
+.page {
+  max-width: 38rem;
+  margin: 0 auto;
+  padding-block: 2rem 4rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+[hidden] { display: none !important; }
+h1 { font-size: 2rem; font-weight: 700; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+p { margin: 0; }
+header { display: flex; flex-direction: column; gap: 0.4rem; }
+header p { color: var(--muted); }
+a { color: var(--accent); }
+.m { font-family: var(--font-math); font-size: 1.08em; white-space: nowrap; }
+sup { font-size: 0.7em; line-height: 0; }
+
+.status { display: flex; flex-direction: column; gap: 0.6rem; border-block: 1px solid var(--rule); padding-block: 0.9rem; }
+.status-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; align-items: baseline; }
+.level-name { font-weight: 700; }
+.score { color: var(--muted); font-variant-numeric: tabular-nums; }
+.meter { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.meter span { height: 8px; background: var(--rule); }
+.meter span.on { background: var(--accent); }
+.recent { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; color: var(--muted); font-size: 0.9em; }
+.dots { display: flex; gap: 5px; }
+.dots span { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--rule); box-sizing: border-box; }
+.dots span.hit { background: var(--good); border-color: var(--good); }
+.dots span.miss { background: var(--bad); border-color: var(--bad); }
+.slip { color: var(--muted); font-size: 0.9em; }
+
+.card { display: flex; flex-direction: column; gap: 1.1rem; }
+.ask-row { display: flex; flex-wrap: wrap; gap: 0.4rem 0.75rem; align-items: center; }
+.ask { color: var(--muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.chip { font-size: 0.8rem; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 0.05rem 0.6rem; }
+.expr { font-family: var(--font-math); font-size: 2.1rem; line-height: 1.2; }
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+.options.words { grid-template-columns: minmax(0, 1fr); }
+.opt {
+  font-family: var(--font-math); font-size: 1.25rem; color: var(--ink);
+  background: var(--panel); border: 2px solid var(--rule); border-radius: 6px;
+  padding: 0.85rem 0.75rem; cursor: pointer; text-align: center; min-width: 0;
+}
+.options.words .opt { font-family: var(--font-text); font-size: 1.05rem; text-align: left; padding: 0.7rem 1rem; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:focus-visible, .btn:focus-visible, .blank:focus-visible, .sign:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.opt:disabled { cursor: default; opacity: 0.6; }
+.opt.is-right { background: var(--good-bg); border-color: var(--good); color: var(--good); opacity: 1; font-weight: 600; }
+.opt.is-wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); opacity: 1; }
+
+.fill { display: flex; flex-direction: column; gap: 0.9rem; align-items: flex-start; }
+.fill-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; font-family: var(--font-math); font-size: 1.7rem; }
+.blank {
+  font: inherit; width: 3.2rem; text-align: center; color: var(--ink);
+  background: var(--panel); border: 2px solid var(--accent); border-radius: 6px; padding: 0.25rem 0.2rem;
+}
+.sign {
+  font: inherit; width: 2.6rem; color: var(--accent); cursor: pointer;
+  background: var(--bg); border: 2px dashed var(--accent); border-radius: 6px; padding: 0.25rem 0;
+}
+.blank:disabled, .sign:disabled { opacity: 0.7; cursor: default; }
+.fill-note { color: var(--muted); font-size: 0.9em; }
+
+.hint { background: var(--hint-bg); color: var(--hint-ink); padding: 0.7rem 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.box { border-collapse: collapse; font-family: var(--font-math); font-size: 1.1em; align-self: flex-start; }
+.box td, .box th { padding: 0.4rem 0.9rem; text-align: center; min-width: 2.5rem; }
+.box td { border: 1.5px solid currentColor; }
+.box th { font-weight: 600; }
+
+.feedback { display: flex; flex-direction: column; gap: 0.6rem; border-left: 3px solid var(--rule); padding: 0.2rem 0 0.2rem 1rem; }
+.feedback.good { border-color: var(--good); }
+.feedback.bad { border-color: var(--bad); }
+.verdict { font-weight: 700; font-size: 1.1rem; }
+.feedback.good .verdict { color: var(--good); }
+.feedback.bad .verdict { color: var(--bad); }
+.feedback ol { margin: 0; padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.25rem; }
+.move { background: var(--panel); padding: 0.6rem 0.8rem; font-weight: 600; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; }
+.actions-left { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.btn {
+  font: inherit; font-weight: 700; border-radius: 6px; cursor: pointer;
+  padding: 0.65rem 1.4rem; border: 2px solid var(--accent);
+  background: var(--accent); color: var(--on-accent);
+}
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn.quiet { background: transparent; color: var(--accent); font-weight: 600; border-color: var(--rule); padding: 0.45rem 0.9rem; font-size: 0.9em; }
+.rule-note { color: var(--muted); font-size: 0.9em; }
+
+@media (max-width: 480px) {
+  body { font-size: 16px; }
+  h1 { font-size: 1.6rem; }
+  .expr { font-size: 1.7rem; }
+  .fill-row { font-size: 1.4rem; }
+  .options { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+
+<div class="page">
+  <header>
+    <h1>Factoring Quiz</h1>
+    <p>Start by picking the answer. Get two right in a row and you fill in the answer yourself. Get 4 of your last 5 right to move up a level.</p>
+  </header>
+
+  <div class="status">
+    <div class="status-row">
+      <span class="level-name" id="levelName"></span>
+      <span class="score" id="score"></span>
+    </div>
+    <div class="meter" id="meter" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="recent"><span>Last 5 at this level</span><span class="dots" id="dots" aria-hidden="true"></span></div>
+    <p class="slip" id="slip" hidden></p>
+  </div>
+
+  <div class="card">
+    <div>
+      <div class="ask-row"><span class="ask" id="ask">Factor</span><span class="chip" id="chip" hidden></span></div>
+      <p class="expr" id="expr"></p>
+    </div>
+
+    <div class="options" id="options"></div>
+
+    <form class="fill" id="fillForm" hidden>
+      <div class="fill-row" id="fillRow"></div>
+      <p class="fill-note" id="fillNote">Type the missing numbers. Tap a dashed box to switch between + and −.</p>
+      <button class="btn" id="check" type="submit" disabled>Check</button>
+    </form>
+
+    <div class="hint" id="hint" hidden></div>
+    <div class="feedback" id="feedback" aria-live="polite" hidden></div>
+
+    <div class="actions">
+      <div class="actions-left">
+        <button class="btn" id="next" type="button" hidden>Next question</button>
+        <button class="btn quiet" id="hintBtn" type="button">Show a hint</button>
+      </div>
+      <button class="btn quiet" id="restart" type="button">Start over</button>
+    </div>
+  </div>
+
+  <p class="rule-note">A hint is free, but a hinted answer does not count toward moving up. Earlier levels come back now and then as review. Your progress is saved in this browser.</p>
+  <p class="rule-note">Stuck? Read the handout: <a href="https://claude.ai/artifact/GHAF13oZWY1AATzNfindcm">Factoring Step by Step</a>.</p>
+</div>
+
+<script>
+// ---------- maths helpers ----------
+var MINUS = '−';
+function ri(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+function pick(a) { return a[ri(0, a.length - 1)]; }
+function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = ri(0, i); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function gcd(a, b) { return b ? gcd(b, a % b) : Math.abs(a); }
+function mul(a, b) { var r = []; for (var n = 0; n < a.length + b.length - 1; n++) r.push(0); a.forEach(function (x, i) { b.forEach(function (y, j) { r[i + j] += x * y; }); }); return r; }
+function scale(k, a) { return a.map(function (x) { return k * x; }); }
+function norm(a) { a = a.slice(); while (a.length && a[a.length - 1] === 0) a.pop(); return a.join(','); }
+function same(a, b) { return norm(a) === norm(b); }
+// coefficients are listed lowest power first: [constant, x, x squared, ...]
+function poly(c) {
+  var out = '';
+  for (var d = c.length - 1; d >= 0; d--) {
+    var k = c[d]; if (!k) continue;
+    var a = Math.abs(k);
+    var v = d === 0 ? '' : d === 1 ? 'x' : 'x<sup>' + d + '</sup>';
+    var body = (d > 0 && a === 1 ? '' : a) + v;
+    out += out === '' ? (k < 0 ? MINUS : '') + body : (k < 0 ? ' ' + MINUS + ' ' : ' + ') + body;
+  }
+  return out || '0';
+}
+function sg(n) { return n < 0 ? MINUS + Math.abs(n) : '' + n; }
+function br(p) { return '(x ' + (p < 0 ? MINUS : '+') + ' ' + Math.abs(p) + ')'; }
+function m(s) { return '<span class="m">' + s + '</span>'; }
+var NUM = { b: 'num' }, SGN = { b: 'sign' };
+
+// What each kind of slip is called, and the tip shown for it.
+var SLIPS = {
+  sign: { name: 'signs', tip: 'Multiply your two numbers and check whether the end comes out plus or minus.' },
+  pair: { name: 'picking the pair of numbers', tip: 'Test the pair both ways: it must multiply to the end number and add to the middle number.' },
+  divide: { name: 'dividing every term', tip: 'Divide every term by what you take out, not just one of them.' },
+  letter: { name: 'taking out a letter', tip: 'Only take out a letter if every term has it, and keep it if it is still there afterwards.' },
+  pattern: { name: 'the square minus a square pattern', tip: 'A square minus a square needs one minus bracket and one plus bracket, so the middle cancels.' },
+  unfinished: { name: 'stopping too early', tip: 'After each step, look inside the bracket and ask whether it can be factored again.' },
+  method: { name: 'choosing the method', tip: 'Ask in the same order every time: is anything shared, then how many terms are there?' }
+};
+
+// ---------- question makers, one per level ----------
+// Each returns: t (target coefficients), answer, ae (answer multiplied out), variant,
+// wrong [{h, e or why, kind}], hint, steps [], why, and fill {parts, sol, read(values)}.
+function q1() {
+  var g = ri(2, 6), a, n;
+  do { a = ri(1, 5); n = ri(1, 9); } while (gcd(a, n) !== 1 || (a === 1 && n === 1));
+  var t = [g * n, g * a];
+  return {
+    t: t, answer: g + '(' + poly([n, a]) + ')', ae: scale(g, [n, a]), variant: 'a', shared: '' + g,
+    wrong: [
+      { h: g + '(' + poly([g * n, a]) + ')', e: scale(g, [g * n, a]), kind: 'divide' },
+      { h: g + '(' + poly([n, g * a]) + ')', e: scale(g, [n, g * a]), kind: 'divide' },
+      { h: g + 'x(' + a + ' + ' + n + ')', e: [0, g * (a + n)], kind: 'letter' }
+    ],
+    hint: 'What is the biggest number that goes into both ' + (g * a) + ' and ' + (g * n) + '?',
+    steps: [
+      g + ' is the biggest number that goes into both ' + (g * a) + ' and ' + (g * n) + ', so it goes in front.',
+      'Divide each term by ' + g + ': ' + m(poly([0, g * a]) + ' ÷ ' + g + ' = ' + poly([0, a])) + ' and ' + m((g * n) + ' ÷ ' + g + ' = ' + n) + '.'
+    ],
+    why: 'The ' + g + ' in front multiplies everything in the bracket, which gives back ' + m(poly(t)) + '.',
+    fill: {
+      parts: a === 1 ? [NUM, '(x +', NUM, ')'] : [NUM, '(', NUM, 'x +', NUM, ')'],
+      sol: a === 1 ? [g, n] : [g, a, n],
+      read: function (v) {
+        var G = v[0], A = a === 1 ? 1 : v[1], C = v[v.length - 1];
+        var e = scale(G, [C, A]), ok = G === g && A === a && C === n;
+        var r = { h: G + '(' + poly([C, A]) + ')', e: e, ok: ok, kind: 'divide' };
+        if (!ok && same(e, t)) {
+          r.kind = 'unfinished';
+          r.note = 'This multiplies out correctly, but it is not finished. The numbers in the bracket still share something, so a bigger number can come out.';
+        }
+        return r;
+      }
+    }
+  };
+}
+function q2(variant, wantFill) {
+  var useA = variant === 'A' ? true : variant === 'B' ? false : Math.random() < 0.5;
+  if (wantFill) useA = false;
+  if (useA) {
+    var b = ri(2, 9) * pick([1, 1, -1]);
+    var t = [0, b, 1];
+    return {
+      t: t, answer: 'x' + br(b), ae: mul([0, 1], [b, 1]), variant: 'A', shared: 'x',
+      wrong: [
+        { h: 'x(' + poly([b, 0, 1]) + ')', e: [0, b, 0, 1], kind: 'divide' },
+        { h: 'x(1 ' + (b < 0 ? MINUS : '+') + ' ' + Math.abs(b) + ')', e: [0, 1 + b], kind: 'divide' },
+        { h: br(b) + '(x + 1)', e: mul([b, 1], [1, 1]), kind: 'method' }
+      ],
+      hint: 'What do both terms have in common? Look at the letter.',
+      steps: [
+        'Both terms have an x, so x goes in front.',
+        'Divide each term by x: ' + m('x<sup>2</sup> ÷ x = x') + ' and ' + m(poly([0, b]) + ' ÷ x = ' + sg(b)) + '.'
+      ],
+      why: 'The x in front multiplies everything in the bracket, which gives back ' + m(poly(t)) + '.'
+    };
+  }
+  var g = ri(2, 5), n = ri(1, 6);
+  var t2 = [0, g * n, g];
+  return {
+    t: t2, answer: g + 'x' + br(n), ae: mul([0, g], [n, 1]), variant: 'B', shared: g + 'x',
+    wrong: [
+      { h: g + '(' + poly([n, 0, 1]) + ')', e: scale(g, [n, 0, 1]), kind: 'letter' },
+      { h: g + 'x' + br(g * n), e: mul([0, g], [g * n, 1]), kind: 'divide' },
+      { h: 'x(' + poly([n, g]) + ')', e: [0, n, g], kind: 'divide' }
+    ],
+    hint: 'What do both terms have in common? Look at the number and the letter.',
+    steps: [
+      'Both terms share ' + g + ' and x, so ' + m(g + 'x') + ' goes in front.',
+      'Divide each term by ' + m(g + 'x') + ': ' + m(poly([0, 0, g]) + ' ÷ ' + g + 'x = x') + ' and ' + m(poly([0, g * n]) + ' ÷ ' + g + 'x = ' + n) + '.'
+    ],
+    why: 'Take out everything the terms share, the number and the letter, so nothing is left to take out later.',
+    fill: {
+      parts: [NUM, 'x(x +', NUM, ')'], sol: [g, n],
+      read: function (v) {
+        return { h: v[0] + 'x' + br(v[1]), e: mul([0, v[0]], [v[1], 1]), ok: v[0] === g && v[1] === n, kind: 'divide' };
+      }
+    }
+  };
+}
+function q3() {
+  var n = ri(2, 12), s = n * n;
+  return {
+    t: [-s, 0, 1], answer: br(-n) + br(n), ae: mul([-n, 1], [n, 1]), variant: 'a',
+    wrong: [
+      { h: br(-n) + br(-n), e: mul([-n, 1], [-n, 1]), kind: 'pattern' },
+      { h: br(n) + br(n), e: mul([n, 1], [n, 1]), kind: 'pattern' },
+      { h: br(-s) + '(x + 1)', e: mul([-s, 1], [1, 1]), kind: 'pair' }
+    ],
+    hint: 'What number times itself makes ' + s + '?',
+    steps: [
+      m('x<sup>2</sup>') + ' is ' + m('x × x') + ', and ' + s + ' is ' + m(n + ' × ' + n) + '.',
+      'Write two brackets with x and ' + n + ': one minus, one plus.'
+    ],
+    why: 'One minus and one plus makes the middle cancel: ' + m('x<sup>2</sup> + ' + n + 'x ' + MINUS + ' ' + n + 'x ' + MINUS + ' ' + s + ' = x<sup>2</sup> ' + MINUS + ' ' + s) + '.',
+    fill: {
+      parts: ['(x ' + MINUS, NUM, ')(x +', NUM, ')'], sol: [n, n],
+      read: function (v) {
+        return { h: br(-v[0]) + br(v[1]), e: mul([-v[0], 1], [v[1], 1]), ok: v[0] === n && v[1] === n, kind: 'pattern' };
+      }
+    }
+  };
+}
+function pairKind(r, s, p, q) {
+  var a = [Math.abs(r), Math.abs(s)].sort().join(), b = [Math.abs(p), Math.abs(q)].sort().join();
+  return a === b ? 'sign' : 'pair';
+}
+function pairNote(r, s, b, c) {
+  return m(sg(r) + ' × ' + sg(s) + ' = ' + sg(r * s)) + ' and ' + m(sg(r) + ' + ' + sg(s) + ' = ' + sg(r + s)) + '. You need them to multiply to ' + sg(c) + ' and add to ' + sg(b) + '.';
+}
+function triWrong(p, q) {
+  var c = p * q;
+  var cands = [[-p, -q], [p - 1, q + 1], [p + 1, q - 1], [-p, q], [p, -q], [p, q + 1], [p + 1, q], [p - 1, q], [p, q - 1], [p + 2, q], [p, q + 2]];
+  for (var r = 1; r <= Math.abs(c); r++) if (c % r === 0) { cands.push([r, c / r]); cands.push([-r, -c / r]); }
+  function key(a, b) { return [a, b].sort(function (x, y) { return x - y; }).join(','); }
+  var seen = {}; seen[key(p, q)] = true;
+  var out = [];
+  shuffle(cands).forEach(function (pr) {
+    if (!pr[0] || !pr[1]) return;
+    var k = key(pr[0], pr[1]); if (seen[k]) return;
+    seen[k] = true; out.push(pr);
+  });
+  return out.slice(0, 3);
+}
+function signHint(b, c) {
+  if (c > 0 && b > 0) return 'The end and the middle are both plus, so both numbers are plus.';
+  if (c > 0) return 'The end is plus and the middle is minus, so both numbers are minus.';
+  return 'The end is minus, so one number is plus and one is minus.';
+}
+function tri(p, q, variant) {
+  var b = p + q, c = p * q, t = [c, b, 1];
+  return {
+    t: t, answer: br(p) + br(q), ae: mul([p, 1], [q, 1]), variant: variant,
+    wrong: triWrong(p, q).map(function (pr) {
+      var r = pr[0], s = pr[1];
+      return { h: br(r) + br(s), e: mul([r, 1], [s, 1]), why: pairNote(r, s, b, c), kind: pairKind(r, s, p, q) };
+    }),
+    hint: 'List the pairs of numbers that multiply to ' + sg(c) + '. Which pair adds to ' + sg(b) + '? ' + signHint(b, c),
+    steps: [
+      'You need two numbers that multiply to ' + sg(c) + ' and add to ' + sg(b) + '.',
+      signHint(b, c),
+      m(sg(p) + ' × ' + sg(q) + ' = ' + sg(c)) + ' and ' + m(sg(p) + ' + ' + sg(q) + ' = ' + sg(b)) + ', so the numbers are ' + sg(p) + ' and ' + sg(q) + '.'
+    ],
+    why: 'When you multiply the brackets, the middle comes from adding the two numbers and the end comes from multiplying them.',
+    fill: {
+      parts: ['(x', SGN, NUM, ')(x', SGN, NUM, ')'],
+      sol: [p < 0 ? -1 : 1, Math.abs(p), q < 0 ? -1 : 1, Math.abs(q)],
+      need: [b, c],
+      pair: function (v) { return [v[0] * v[1], v[2] * v[3]]; },
+      read: function (v) {
+        var r = v[0] * v[1], s = v[2] * v[3];
+        return { h: br(r) + br(s), e: mul([r, 1], [s, 1]), ok: (r === p && s === q) || (r === q && s === p), note: pairNote(r, s, b, c), kind: pairKind(r, s, p, q) };
+      }
+    }
+  };
+}
+function q4() { return tri(ri(1, 6), ri(1, 9), 'pp'); }
+function q5(variant) {
+  var both = variant === 'nn' ? true : variant === 'pn' ? false : Math.random() < 0.4;
+  if (both) return tri(-ri(1, 6), -ri(1, 9), 'nn');
+  var p, q;
+  do { p = ri(1, 9); q = -ri(1, 9); } while (p === -q);
+  return tri(p, q, 'pn');
+}
+function q6(variant) {
+  var squares = variant === 'sq' ? true : variant === 'tri' ? false : Math.random() < 0.5;
+  var k, inner, t;
+  if (squares) {
+    k = ri(2, 5); var n = ri(2, 6), s = n * n;
+    inner = [-s, 0, 1]; t = scale(k, inner);
+    return {
+      t: t, answer: k + br(-n) + br(n), ae: scale(k, mul([-n, 1], [n, 1])), variant: 'sq', shared: '' + k,
+      wrong: [
+        { h: k + '(' + poly(inner) + ')', why: 'This is right so far, but it is not finished. ' + m(poly(inner)) + ' is a square minus a square, so it factors again.', kind: 'unfinished' },
+        { h: '(' + poly([-n, k]) + ')' + br(n), e: mul([-n, k], [n, 1]), kind: 'divide' },
+        { h: k + br(-n) + br(-n), e: scale(k, mul([-n, 1], [-n, 1])), kind: 'pattern' }
+      ],
+      hint: 'Start by finding a number that goes into every term. Then look at what is left in the bracket.',
+      steps: [
+        'Both terms share ' + k + ', so take it out first: ' + m(k + '(' + poly(inner) + ')') + '.',
+        m(poly(inner)) + ' is a square minus a square, so it becomes ' + m(br(-n) + br(n)) + '.'
+      ],
+      why: 'Taking out what is shared first uncovers the easier problem inside the bracket.',
+      fill: {
+        parts: [NUM, '(x ' + MINUS, NUM, ')(x +', NUM, ')'], sol: [k, n, n],
+        read: function (v) {
+          return { h: v[0] + br(-v[1]) + br(v[2]), e: scale(v[0], mul([-v[1], 1], [v[2], 1])), ok: v[0] === k && v[1] === n && v[2] === n, kind: v[0] === k ? 'pattern' : 'divide' };
+        }
+      }
+    };
+  }
+  k = ri(2, 4); var p, q;
+  do { p = ri(1, 6) * pick([1, 1, -1]); q = ri(1, 6) * pick([1, -1]); } while (p === -q);
+  var b = p + q, c = p * q;
+  inner = [c, b, 1]; t = scale(k, inner);
+  return {
+    t: t, answer: k + br(p) + br(q), ae: scale(k, mul([p, 1], [q, 1])), variant: 'tri', shared: '' + k,
+    wrong: [
+      { h: k + '(' + poly(inner) + ')', why: 'This is right so far, but it is not finished. ' + m(poly(inner)) + ' still factors into two brackets.', kind: 'unfinished' },
+      { h: k + br(-p) + br(-q), e: scale(k, mul([-p, 1], [-q, 1])), kind: 'sign' },
+      { h: '(' + poly([p, k]) + ')' + br(q), e: mul([p, k], [q, 1]), kind: 'divide' }
+    ],
+    hint: 'Start by finding a number that goes into every term. Then look at what is left in the bracket.',
+    steps: [
+      'All three terms share ' + k + ', so take it out first: ' + m(k + '(' + poly(inner) + ')') + '.',
+      'Inside the bracket, find two numbers that multiply to ' + sg(c) + ' and add to ' + sg(b) + ': they are ' + sg(p) + ' and ' + sg(q) + '.'
+    ],
+    why: 'Taking out what is shared first uncovers the easier problem inside the bracket.',
+    fill: {
+      parts: [NUM, '(x', SGN, NUM, ')(x', SGN, NUM, ')'],
+      sol: [k, p < 0 ? -1 : 1, Math.abs(p), q < 0 ? -1 : 1, Math.abs(q)],
+      need: [b, c],
+      pair: function (v) { return [v[1] * v[2], v[3] * v[4]]; },
+      read: function (v) {
+        var r = v[1] * v[2], s = v[3] * v[4];
+        return { h: v[0] + br(r) + br(s), e: scale(v[0], mul([r, 1], [s, 1])), ok: v[0] === k && ((r === p && s === q) || (r === q && s === p)), kind: v[0] !== k ? 'divide' : pairKind(r, s, p, q) };
+      }
+    }
+  };
+}
+// Level 7: no method label. The learner decides what to do first.
+var METHODS = ['Take out what is shared', 'Two brackets, one minus and one plus', 'Find two numbers that multiply and add'];
+function q7(variant) {
+  var types = ['common', 'squares', 'tri', 'two'];
+  var ty = types.indexOf(variant) >= 0 ? variant : pick(types);
+  var u = ty === 'common' ? (Math.random() < 0.5 ? q1() : q2('B')) : ty === 'squares' ? q3() : ty === 'tri' ? (Math.random() < 0.5 ? q4() : q5()) : q6();
+  var ci = ty === 'squares' ? 1 : ty === 'tri' ? 2 : 0;
+  var whys;
+  if (ty === 'common') whys = [null, 'Every term can be divided by ' + m(u.shared) + ', so that comes out first. Brackets like these are for a square minus a square.', 'Every term can be divided by ' + m(u.shared) + ', so that comes out first. There is no three-term bracket to split here.'];
+  else if (ty === 'two') whys = [null, 'That step comes second. First take out the ' + u.shared + ' that every term shares, and the bracket becomes easier.', 'That step comes second. First take out the ' + u.shared + ' that every term shares, and the bracket becomes easier.'];
+  else if (ty === 'squares') whys = ['The two terms share nothing: no number or letter goes into both.', null, 'That needs three terms. This has two terms, a square minus a square.'];
+  else whys = ['The three terms share nothing: no number or letter goes into all of them.', 'That needs two terms with a minus between them. This has three terms.', null];
+  var tell = ci === 0 ? 'Ask first: do all the terms share something? Here they all share ' + m(u.shared) + '.'
+    : ci === 1 ? 'Nothing is shared. There are two terms, both are squares, and there is a minus between them.'
+    : 'Nothing is shared, and there are three terms starting with ' + m('x<sup>2</sup>') + '.';
+  var wrong = [];
+  METHODS.forEach(function (name, i) { if (i !== ci) wrong.push({ h: name, why: whys[i], kind: 'method', pos: i }); });
+  return {
+    t: u.t, answer: METHODS[ci], answerPos: ci, plain: true, ae: u.t, variant: ty,
+    askLabel: 'What is the first step?',
+    wrong: wrong,
+    hint: 'Ask in order: is there a number or letter that goes into every term? If not, how many terms are there?',
+    steps: [tell, 'Full answer: ' + m(poly(u.t) + ' = ' + u.answer) + '.'],
+    why: 'Asking the same questions in the same order means you never have to guess the method.'
+  };
+}
+
+var LEVELS = [
+  { name: 'Take out a number', make: q1 },
+  { name: 'Take out x', make: q2 },
+  { name: 'A square minus a square', make: q3 },
+  { name: 'Three terms, all plus', make: q4 },
+  { name: 'Three terms with minus signs', make: q5 },
+  { name: 'Two steps', make: q6 },
+  { name: 'Mixed: you choose the method', make: q7 }
+];
+
+// Level rule: look at the last 5 answers at the current level.
+// 4 or more right out of 5 moves up. Fewer than 40% right (after 3 answers) moves down.
+function nextLevel(level, recent) {
+  var right = recent.filter(Boolean).length;
+  if (recent.length >= 5 && right / recent.length >= 0.8 && level < LEVELS.length - 1) return level + 1;
+  if (recent.length >= 3 && right / recent.length < 0.4 && level > 0) return level - 1;
+  return level;
+}
+// Review rule: each finished level comes back after `gap` questions.
+// A right answer doubles the gap (up to 32). A wrong answer brings it back after 3.
+function reviewAfter(rev, ok, n) {
+  var gap = ok ? Math.min(rev.gap * 2, 32) : 3;
+  return { gap: gap, next: n + gap };
+}
+
+// ---------- page ----------
+if (typeof document !== 'undefined') (function () {
+  var el = function (id) { return document.getElementById(id); };
+  var KEY = 'factoring-quiz-v2';
+  var state, cur, blanks = [], lastExpr = '', firstAsk = true;
+
+  function fresh() {
+    return { level: 0, conf: 0, recent: [], total: 0, right: 0, n: 0, slips: {}, retry: null,
+      rev: LEVELS.map(function () { return { gap: 4, next: 0 }; }) };
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function load() {
+    try {
+      var s = JSON.parse(localStorage.getItem(KEY));
+      if (s && typeof s.level === 'number' && s.level >= 0 && s.level < LEVELS.length && Array.isArray(s.recent) &&
+          Array.isArray(s.rev) && s.rev.length === LEVELS.length && typeof s.total === 'number' && s.slips) return s;
+    } catch (e) {}
+    return null;
+  }
+
+  function drawStatus() {
+    el('levelName').textContent = 'Level ' + (state.level + 1) + ' of ' + LEVELS.length + ': ' + LEVELS[state.level].name;
+    el('score').textContent = state.total
+      ? state.right + ' of ' + state.total + ' correct (' + Math.round(100 * state.right / state.total) + '%)'
+      : 'No answers yet';
+    var segs = el('meter').children;
+    for (var i = 0; i < segs.length; i++) segs[i].className = i <= state.level ? 'on' : '';
+    var dots = '';
+    for (var d = 0; d < 5; d++) dots += '<span class="' + (d < state.recent.length ? (state.recent[d] ? 'hit' : 'miss') : '') + '"></span>';
+    el('dots').innerHTML = dots;
+    var top = null;
+    Object.keys(state.slips).forEach(function (k) { if (SLIPS[k] && state.slips[k] >= 2 && (!top || state.slips[k] > state.slips[top])) top = k; });
+    el('slip').hidden = !top;
+    if (top) el('slip').textContent = 'Most common slip so far: ' + SLIPS[top].name + ' (' + state.slips[top] + ' times).';
+  }
+
+  function choose() {
+    // 1. after a miss: one more of the same kind, with choices
+    if (state.retry) {
+      var r = state.retry; state.retry = null;
+      return { lvl: r.level, variant: r.variant, mode: 'choose', chip: 'One more like that' };
+    }
+    // 2. an earlier level that is due for review
+    var due = -1;
+    for (var i = 0; i < state.level; i++) if (state.rev[i].next <= state.n && (due < 0 || state.rev[i].next < state.rev[due].next)) due = i;
+    if (due >= 0) return { lvl: due, mode: 'fill', chip: 'Review: level ' + (due + 1) };
+    // 3. the current level
+    return { lvl: state.level, mode: state.conf >= 2 ? 'fill' : 'choose', chip: '' };
+  }
+
+  function ask() {
+    var c = choose(), q, tries = 0;
+    do { q = LEVELS[c.lvl].make(c.variant, c.mode === 'fill'); tries++; } while (poly(q.t) === lastExpr && tries < 6);
+    if (!q.fill) c.mode = 'choose';
+    lastExpr = poly(q.t);
+    cur = { q: q, lvl: c.lvl, mode: c.mode, hinted: false, done: false };
+
+    el('ask').textContent = q.askLabel || (c.lvl >= 5 ? 'Factor completely' : 'Factor');
+    el('chip').hidden = !c.chip; el('chip').textContent = c.chip;
+    el('expr').innerHTML = poly(q.t);
+    el('feedback').hidden = true; el('hint').hidden = true; el('next').hidden = true;
+    el('hintBtn').hidden = false;
+
+    var box = el('options'), form = el('fillForm');
+    box.hidden = c.mode !== 'choose'; form.hidden = c.mode !== 'fill';
+    if (c.mode === 'choose') {
+      var opts = [{ h: q.answer, ok: true, pos: q.answerPos }].concat(q.wrong);
+      if (q.plain) opts.sort(function (a, b) { return a.pos - b.pos; }); else shuffle(opts);
+      box.className = 'options' + (q.plain ? ' words' : '');
+      box.innerHTML = '';
+      opts.forEach(function (o) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'opt'; b.innerHTML = o.h;
+        if (o.ok) b.dataset.ok = '1';
+        b.addEventListener('click', function () {
+          var all = box.children;
+          for (var i = 0; i < all.length; i++) { all[i].disabled = true; if (all[i].dataset.ok) all[i].classList.add('is-right'); }
+          if (!o.ok) b.classList.add('is-wrong');
+          finish(!!o.ok, o.ok ? null : { why: o.why || ('Multiply it back out and you get ' + m(poly(o.e)) + ', not ' + m(poly(q.t)) + '.'), kind: o.kind });
+        });
+        box.appendChild(b);
+      });
+    } else {
+      renderFill(q);
+      if (!firstAsk && blanks.length) { for (var i = 0; i < blanks.length; i++) if (blanks[i].tagName === 'INPUT') { blanks[i].focus(); break; } }
+    }
+    firstAsk = false;
+    drawStatus();
+  }
+
+  // ----- fill in the blanks -----
+  function setSign(b, v) {
+    b._v = v; b.textContent = v < 0 ? MINUS : '+';
+    b.setAttribute('aria-label', 'Sign is ' + (v < 0 ? 'minus' : 'plus') + '. Press to change.');
+  }
+  function renderFill(q) {
+    var row = el('fillRow'); row.innerHTML = ''; blanks = [];
+    var hasSign = false;
+    q.fill.parts.forEach(function (p) {
+      if (typeof p === 'string') { var s = document.createElement('span'); s.innerHTML = p; row.appendChild(s); return; }
+      if (p.b === 'num') {
+        var inp = document.createElement('input');
+        inp.type = 'text'; inp.inputMode = 'numeric'; inp.autocomplete = 'off'; inp.maxLength = 3;
+        inp.className = 'blank'; inp.id = 'blank' + blanks.length;
+        inp.setAttribute('aria-label', 'Missing number ' + (blanks.filter(function (x) { return x.tagName === 'INPUT'; }).length + 1));
+        inp.addEventListener('input', fillChanged);
+        row.appendChild(inp); blanks.push(inp);
+      } else {
+        hasSign = true;
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'sign'; b.id = 'blank' + blanks.length;
+        setSign(b, 1);
+        b.addEventListener('click', function () { setSign(b, -b._v); fillChanged(); });
+        row.appendChild(b); blanks.push(b);
+      }
+    });
+    el('fillNote').textContent = hasSign ? 'Type the missing numbers. Tap a dashed box to switch between + and ' + MINUS + '.' : 'Type the missing numbers.';
+    el('check').disabled = true;
+  }
+  function values() {
+    return blanks.map(function (b) {
+      if (b.tagName !== 'INPUT') return b._v;
+      var s = b.value.trim();
+      return /^\d{1,3}$/.test(s) ? parseInt(s, 10) : NaN;
+    });
+  }
+  function fillChanged() {
+    if (cur.done) return;
+    el('check').disabled = values().some(isNaN);
+    if (cur.hinted) drawHint();
+  }
+  el('fillForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (cur.done || cur.mode !== 'fill') return;
+    var v = values(); if (v.some(isNaN)) return;
+    var r = cur.q.fill.read(v);
+    blanks.forEach(function (b) { b.disabled = true; });
+    el('check').disabled = true;
+    finish(r.ok, r.ok ? null : {
+      why: 'You entered ' + m(r.h) + '. ' + (r.note || ('Multiply it out and you get ' + m(poly(r.e)) + ', not ' + m(poly(cur.q.t)) + '.')),
+      kind: r.kind
+    });
+  });
+
+  // ----- hint -----
+  function drawHint() {
+    var q = cur.q, html = '<p><strong>Hint:</strong> ' + q.hint + '</p>';
+    if (cur.mode === 'fill' && q.fill.pair) {
+      var pr = q.fill.pair(values()), r = pr[0], s = pr[1], kr = !isNaN(r), ks = !isNaN(s);
+      html += '<table class="box"><tr><th></th><th>x</th><th>' + (kr ? sg(r) : '?') + '</th></tr>' +
+        '<tr><th>x</th><td>x<sup>2</sup></td><td>' + (kr ? poly([0, r]) : '?') + '</td></tr>' +
+        '<tr><th>' + (ks ? sg(s) : '?') + '</th><td>' + (ks ? poly([0, s]) : '?') + '</td><td>' + (kr && ks ? sg(r * s) : '?') + '</td></tr></table>';
+      html += kr && ks
+        ? '<p>Your numbers make a middle of ' + m(sg(r) + ' + ' + sg(s) + ' = ' + sg(r + s)) + ' and an end of ' + m(sg(r) + ' × ' + sg(s) + ' = ' + sg(r * s)) + '. You need a middle of ' + sg(q.fill.need[0]) + ' and an end of ' + sg(q.fill.need[1]) + '.</p>'
+        : '<p>Fill in both numbers and the box shows what they make.</p>';
+    }
+    el('hint').innerHTML = html; el('hint').hidden = false;
+  }
+  el('hintBtn').addEventListener('click', function () {
+    if (cur.done) return;
+    cur.hinted = true; el('hintBtn').hidden = true; drawHint();
+  });
+
+  // ----- marking -----
+  function finish(ok, miss) {
+    var q = cur.q, here = cur.lvl === state.level, html = '', note = '';
+    cur.done = true;
+    el('hintBtn').hidden = true;
+    state.total++; state.n++; if (ok) state.right++;
+
+    if (ok) {
+      html += '<p class="verdict">✓ Correct' + (cur.hinted ? ', with a hint.' : '.') + '</p>';
+    } else {
+      html += '<p class="verdict">✗ Not quite. The answer is ' + (q.plain ? '<strong>' + q.answer + '</strong>' : m(q.answer)) + '.</p>';
+      html += '<p><strong>Why that does not work:</strong> ' + miss.why + '</p>';
+      if (SLIPS[miss.kind]) {
+        state.slips[miss.kind] = (state.slips[miss.kind] || 0) + 1;
+        html += '<p><strong>Watch for:</strong> ' + SLIPS[miss.kind].tip + '</p>';
+      }
+      html += '<p><strong>How to get it:</strong></p>';
+      state.retry = { level: cur.lvl, variant: q.variant };
+      note = 'Next is one more like this, with answers to pick from.';
+    }
+    html += '<ol>' + q.steps.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ol>';
+    html += '<p><strong>Why it works:</strong> ' + q.why + '</p>';
+
+    if (!here) {
+      state.rev[cur.lvl] = reviewAfter(state.rev[cur.lvl], ok, state.n);
+    } else {
+      if (!ok) state.conf = 0; else if (!cur.hinted) state.conf++;
+      if (!ok || !cur.hinted) { state.recent.push(ok); if (state.recent.length > 5) state.recent.shift(); }
+      drawStatus();
+      var before = state.level, after = nextLevel(before, state.recent);
+      if (after !== before) {
+        note = after > before
+          ? 'You got ' + state.recent.filter(Boolean).length + ' of your last 5 right. Moving up to level ' + (after + 1) + ': ' + LEVELS[after].name + '.'
+          : 'Let’s step back to level ' + (after + 1) + ' (' + LEVELS[after].name + ') and build up again.';
+        state.rev[before] = { gap: 4, next: state.n + 4 };
+        state.level = after; state.recent = []; state.conf = 0; state.retry = null;
+      } else if (before === LEVELS.length - 1 && state.recent.length >= 5 && state.recent.filter(Boolean).length >= 4) {
+        note = 'You are choosing the right method nearly every time. That is the whole skill. Keep going for more practice.';
+      } else if (ok && !cur.hinted && state.conf === 2 && cur.mode === 'choose' && q.fill) {
+        note = 'Two right in a row. Next time you fill in the answer yourself.';
+      }
+    }
+    if (note) html += '<p class="move">' + note + '</p>';
+
+    var fb = el('feedback');
+    fb.className = 'feedback ' + (ok ? 'good' : 'bad');
+    fb.innerHTML = html; fb.hidden = false;
+    if (!here) drawStatus();
+    save();
+    el('next').hidden = false; el('next').focus();
+  }
+
+  el('next').addEventListener('click', ask);
+  el('restart').addEventListener('click', function () { state = fresh(); save(); ask(); });
+  state = load() || fresh();
+  ask();
+})();
+</script>
