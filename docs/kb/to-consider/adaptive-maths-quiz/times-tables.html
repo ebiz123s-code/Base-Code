@@ -268,7 +268,7 @@ var LEVELS = [
 
 // An item is one fact with the trick used for it: t is the table the trick belongs to, n is the other number.
 function bestItem(a, b) {
-  var first = [1, 10, 2, 5], rest = [9, 4, 3, 6, 8, 7], i;
+  var first = [1, 10, 2, 9, 5], rest = [4, 3, 6, 8, 7], i;
   for (i = 0; i < first.length; i++) { if (a === first[i]) return { t: a, n: b }; if (b === first[i]) return { t: b, n: a }; }
   if (a === b) return { t: a, n: a, sq: true };
   for (i = 0; i < rest.length; i++) { if (a === rest[i]) return { t: a, n: b }; if (b === rest[i]) return { t: b, n: a }; }
@@ -300,6 +300,11 @@ function work(it) {
     case 11: return pre + n + ' ' + X + ' 10 = ' + 10 * n + '. Add one more ' + n + ': ' + 10 * n + ' + ' + n + ' = ' + 11 * n + '.';
     default: return pre + n + ' ' + X + ' 10 = ' + 10 * n + ' and ' + n + ' ' + X + ' 2 = ' + 2 * n + '. Add them: ' + 10 * n + ' + ' + 2 * n + ' = ' + 12 * n + '.';
   }
+}
+// A second way to the same fact, using the other number's trick (5 x 9 can be done as a 9 or as a 5).
+function otherWay(it) {
+  if (it.sq || it.t === it.n || it.t < 2 || it.n < 2 || it.t > 10 || it.n > 10) return '';
+  return work({ t: it.n, n: it.t });
 }
 function hintFor(it) {
   var t = it.t, n = it.n, pre = it.turn ? 'Turn it around: think of ' + t + ' ' + X + ' ' + n + '. ' : '';
@@ -364,10 +369,17 @@ function gridKeys() { var k = [], a, b; for (a = 1; a <= 10; a++) for (b = a; b 
 function solidCount(state) { return gridKeys().filter(function (k) { return state.facts[k] && state.facts[k].s === 3; }).length; }
 function currentLevel(state) { for (var i = 0; i < LEVELS.length; i++) if (!state.done[LEVELS[i].id]) return i; return LEVELS.length - 1; }
 
-// One trick per fact: the first level that teaches it wins.
+// One main trick per fact (9s before 5s), and the first level that teaches the fact.
 var ITEMS = (function () {
   var m = {};
-  LEVELS.forEach(function (L, i) { if (L.turn || L.mix) return; pool(L).forEach(function (it) { var k = key(it.t, it.n); if (!m[k]) m[k] = { t: it.t, n: it.n, sq: it.sq, level: i }; }); });
+  LEVELS.forEach(function (L, i) {
+    if (L.turn || L.mix) return;
+    pool(L).forEach(function (it) {
+      var k = key(it.t, it.n); if (m[k]) return;
+      var best = it.t <= 10 && it.n <= 10 ? bestItem(it.t, it.n) : it;
+      m[k] = { t: best.t, n: best.n, sq: best.sq, level: i };
+    });
+  });
   return m;
 })();
 
@@ -464,7 +476,7 @@ if (typeof document !== 'undefined') (function () {
     var b = ev.target.closest ? ev.target.closest('.cell') : null; if (!b) return;
     var a = +b.dataset.a, c = +b.dataset.b, k = key(a, c), it = ITEMS[k], s = factOf(k).s;
     el('peek').hidden = false;
-    el('peek').textContent = a + ' ' + X + ' ' + c + ' = ' + a * c + '. ' + ['Not started yet.', 'Started.', 'Nearly solid.', 'Solid.'][s] + ' The trick: ' + work(it);
+    el('peek').textContent = a + ' ' + X + ' ' + c + ' = ' + a * c + '. ' + ['Not started yet.', 'Started.', 'Nearly solid.', 'Solid.'][s] + ' The trick: ' + work(it) + (otherWay(it) ? ' Another way: ' + otherWay(it) : '');
   });
 
   function drawHome(popKeys) {
@@ -632,6 +644,7 @@ if (typeof document !== 'undefined') (function () {
       var kind = slipKind(q.a, q.b, v);
       if (SLIP_TIPS[kind]) html += '<p>' + SLIP_TIPS[kind] + '</p>';
       html += '<p><strong>The trick:</strong> ' + work(q.it) + '</p>';
+      if (otherWay(q.it)) html += '<p><strong>Another way:</strong> ' + otherWay(q.it) + '</p>';
     }
 
     if (ses.type === 'daily') { if (ok) ses.right++; }
