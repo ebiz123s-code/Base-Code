@@ -4,4 +4,10 @@ Ideas that have been explored far enough to judge, but not committed to. Each en
 
 | Idea | Status | Entry |
 | --- | --- | --- |
-| Maths skill trainer for parents and children, starting with times tables | Direction agreed. Times tables and division (free tier) built as a prototype. Factoring prototype built. Not yet tried with children. | [adaptive-maths-quiz.md](adaptive-maths-quiz.md) |
+| *(none at the moment)* | | |
+
+## Moved to projects
+
+| Idea | Became | When |
+| --- | --- | --- |
+| Maths skill trainer for parents and children | [The Gold Grid](../../projects/the-gold-grid/README.md) | 27 November 2026 |

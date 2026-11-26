@@ -1,6 +1,6 @@
-# Adaptive maths quiz for parents, by grade
+# The Gold Grid: background and thinking so far
 
-**Status:** to consider. A working prototype exists for one topic (factoring). Nothing has been built as a product.
+**Status:** this is now a project. [README.md](README.md) has the current state and [ROADMAP.md](ROADMAP.md) has what is next. This file keeps the history and the reasoning behind the decisions.
 **Recorded:** 26 November 2026
 
 ## Agreed direction (26 November 2026)
@@ -89,7 +89,7 @@ With turning facts around and ×1, ×2, ×5 and ×10 known, 21 facts remain up t
 
 ### Version 1 as built (26 November 2026)
 
-Published at https://claude.ai/artifact/TLxZsJjW3UiLMs8Jqcipzx (private until shared from the page) and saved as [`adaptive-maths-quiz/times-tables.html`](adaptive-maths-quiz/times-tables.html).
+Published at https://claude.ai/artifact/TLxZsJjW3UiLMs8Jqcipzx (private until shared from the page) and saved as [`prototypes/times-tables.html`](prototypes/times-tables.html).
 
 It follows the outline above, with these choices made during the build:
 
@@ -133,7 +133,7 @@ A practice tool that teaches one maths skill at a time, explains why each method
 | --- | --- | --- |
 | Printable handout, "Factoring Step by Step" | https://claude.ai/artifact/GHAF13oZWY1AATzNfindcm | Private until shared from the page's Share menu. |
 | Interactive quiz, "Factoring Quiz" | https://claude.ai/artifact/JzNExJ3C44JfAbsyW63d4E | Was shared as "Anyone with the link" when last published. |
-| Source for both | [`adaptive-maths-quiz/`](adaptive-maths-quiz/) | Page content only. The publishing tool adds the `<html>`, `<head>` and `<body>` wrapper, so wrap the file before opening it directly in a browser. |
+| Source for both | [`prototypes/`](prototypes/) | Page content only. The publishing tool adds the `<html>`, `<head>` and `<body>` wrapper, so wrap the file before opening it directly in a browser. |
 
 ## How we got here
 
