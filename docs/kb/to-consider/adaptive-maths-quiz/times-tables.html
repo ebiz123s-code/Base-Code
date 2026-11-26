@@ -367,6 +367,14 @@ function dwork(d, qn) {
     case 4: return 'Half of ' + p + ' is ' + p / 2 + '. Half again is ' + qn + '.';
     case 8: return 'Halve three times: ' + p / 2 + ', ' + p / 4 + ', ' + qn + '.';
     case 5: return 'Double ' + p + ' to get ' + 2 * p + ', then divide by 10: ' + qn + '.';
+    case 11:
+      if (qn <= 9) return 'From 11 to 99 the 11s are double digits: ' + p + ' is ' + qn + ' and ' + qn + '. Check: ' + qn * 10 + ' + ' + qn + ' = ' + p + ', so the answer is ' + qn + '.';
+      return '11 lots is 10 lots plus 1 lot. Try ' + qn + ': ' + qn * 10 + ' + ' + qn + ' = ' + p + '. The answer is ' + qn + '.';
+    case 12:
+      if (qn >= 10) return '12 ' + X + ' 10 = 120.' + (qn === 10 ? '' : ' ' + p + ' is ' + (p - 120) + ' more, which is ' + (qn - 10) + ' more ' + (qn === 11 ? 'lot' : 'lots') + ' of 12.') + ' The answer is ' + qn + '.';
+      var g = Math.floor(p / 10), lead = '12 lots is 10 lots plus 2 lots. ' + p + ' has ' + g + ' tens, so try ' + g + ': ' + g * 10 + ' + ' + g * 2 + ' = ' + g * 12 + '. ';
+      if (g === qn) return lead + 'The answer is ' + qn + '.';
+      return lead + 'Too much, so go down. Try ' + qn + ': ' + qn * 10 + ' + ' + qn * 2 + ' = ' + p + '. The answer is ' + qn + '.';
     default: return 'Ask: ' + d + ' times what makes ' + p + '? ' + d + ' ' + X + ' ' + qn + ' = ' + p + ', so the answer is ' + qn + '.';
   }
 }
@@ -378,6 +386,8 @@ function dhint(d, p) {
     case 4: return 'Halve ' + p + ', then halve again.';
     case 8: return 'Halve ' + p + ' three times.';
     case 5: return 'Double ' + p + ', then divide by 10.';
+    case 11: return p < 100 ? 'Look at the two digits of ' + p + '.' : '11 lots is 10 lots plus 1 lot. Try a number and check it.';
+    case 12: return p >= 120 ? 'Start from 12 ' + X + ' 10 = 120. How many more 12s do you need?' : '12 lots is 10 lots plus 2 lots. ' + p + ' has ' + Math.floor(p / 10) + ' tens, so try ' + Math.floor(p / 10) + ' first. Go down if it is too much.';
     default: return 'Ask: ' + d + ' times what makes ' + p + '?';
   }
 }
@@ -409,7 +419,7 @@ var DCARDS = {
   sq: { idea: 'A square number divided by its own root gives the root back.', ex: ['49 ' + DIV + ' 7 = 7', '81 ' + DIV + ' 9 = 9'] },
   t7: { idea: 'Ask: 7 times what makes it? You know these from the times grid.', ex: ['56 ' + DIV + ' 7: 7 ' + X + ' 8 = 56, so the answer is 8', '42 ' + DIV + ' 7: 7 ' + X + ' 6 = 42, so the answer is 6'] },
   mix: { idea: 'Any division, in any order. Halve if you can. If not, ask what the number times what makes it.', ex: ['54 ' + DIV + ' 9: 9 ' + X + ' 6 = 54, so the answer is 6', '32 ' + DIV + ' 4: half is 16, half again is 8'] },
-  bonus: { idea: 'Ask: 11 or 12 times what makes it?', ex: ['77 ' + DIV + ' 11: 11 ' + X + ' 7 = 77, so the answer is 7', '84 ' + DIV + ' 12: 12 ' + X + ' 7 = 84, so the answer is 7'] }
+  bonus: { idea: 'Eleven lots is ten lots plus one. Twelve lots is ten lots plus two. Make a first guess from the tens digit, check it, and go down if it is too much.', ex: ['77 ' + DIV + ' 11: the two digits match, so the answer is 7', '84 ' + DIV + ' 12: try 8, and 80 + 16 = 96 is too much. Try 7, and 70 + 14 = 84, so the answer is 7'] }
 };
 
 // ----- fact memory -----

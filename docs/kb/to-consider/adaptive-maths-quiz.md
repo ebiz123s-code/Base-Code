@@ -109,7 +109,7 @@ Added to the same page as a Times / Divide switch on the home screen.
 
 - **Separate memory.** Divide has its own grid, levels, best time and "facts to help with" list, because knowing 7 x 8 does not always mean knowing 56 / 7. The streak and "done for today" are shared.
 - **Levels:** the same order as Times without "Turn it around": divide by 1 and 10, 2, 5, 4, 9, 3, 6, 8, squares, 7, mixed, bonus 11 and 12.
-- **Tricks:** halve for 2, halve twice for 4, halve three times for 8, double then divide by 10 for 5, move the digits right for 10. For 3, 6, 7, 9, 11 and 12: "ask what times the number makes it". The 9s card adds the shortcut that the answer is one more than the tens digit.
+- **Tricks:** halve for 2, halve twice for 4, halve three times for 8, double then divide by 10 for 5, move the digits right for 10. For 3, 6, 7 and 9: "ask what times the number makes it". For 12: guess from the tens digit, check with "10 lots plus 2 lots", and go down if it is too much. For 11: the double digits. The 9s card adds the shortcut that the answer is one more than the tens digit.
 - **Slips named:** one out (with a check by multiplying), giving the number divided by, and subtracting instead of dividing.
 - **Times change made at the same time:** facts with a 9 use the "x10, take one away" trick first, and a second way is shown when a fact has two tricks.
 
