@@ -105,6 +105,54 @@ Things to avoid: timers on every question (they raise anxiety and reward guessin
 
 Cheapest to try first: 1, 2 and 5. They need no accounts and fit in the single page.
 
+## What would make it different from other courses
+
+Competitors have not been surveyed in detail. Check each of these against the main products before relying on it.
+
+**The three to bet on**
+
+1. **Practice from this week's homework.** The parent photographs a homework sheet or textbook page and the tool generates practice on those skills. This matches school without mapping every curriculum. Uses AI.
+2. **Tracing a mistake back to its cause.** A child who keeps getting signs wrong in factoring usually has a gap in multiplying negative numbers. The tool drops back to that earlier skill, fixes it, and returns. Needs a map of which skill depends on which; no AI.
+3. **Coaching the parent.** The weekly note includes a two-minute script for explaining the one thing the child is stuck on, and a refresher for parents who have forgotten the maths. Can start from fixed text per slip kind; AI makes it personal.
+
+**Other additions**
+
+| Addition | What it does | Needs AI |
+| --- | --- | --- |
+| Explain it back | The child says or types why an answer is right, and the reasoning is checked. | Yes |
+| Find the mistake | A worked solution with one error to spot. | No |
+| "How sure are you?" | A confidence tap before the answer is revealed. Exposes guessing and confident errors. | No |
+| Mastery that has to last | A skill counts as mastered only after a correct answer weeks later. | No |
+| Weekly printed page | One worksheet built from that child's own slips. | No |
+| A tutor that asks, not tells | A leading question about the current problem when the child is stuck. | Yes |
+
+AI features cost money on every use and need safeguards suitable for children. The others are ordinary code.
+
+## Tiers
+
+The owner's direction (26 November 2026): layer the app. A free tier with no AI that is valuable on its own and that a parent would share with other parents, then two paid tiers that add chargeable AI features.
+
+**Proposed split**
+
+| Tier | For | Contains | Running cost |
+| --- | --- | --- | --- |
+| 1. Free, no AI | Any parent, no sign-up | The quizzes and printable handouts for every skill, hints, explanations, review, the fun layer (daily five, streak, puzzle), progress saved on the device, and the child's most common slip shown on screen. | Close to nothing: static pages. |
+| 2. Paid | Parents who want to follow progress | A parent account, more than one child, progress across devices, the weekly report, tracing mistakes back to the earlier skill, mastery checks weeks later, the weekly printed page, and the parent script per slip. | Low: a database, email, and light AI at most for wording the weekly note. |
+| 3. Paid, higher | Parents who want it fitted to their child | Practice from a photo of homework, explain it back, and the tutor that asks questions. | Real cost per use. |
+
+**Why this split**
+
+- The free tier costs almost nothing to serve, so sharing it widely is safe. With no accounts it also collects no data about children, which is a selling point and avoids the privacy rules until tier 2.
+- Tier 2 is where the parent angle lives, and most of it does not need AI. Charging for it funds the product before any AI cost is taken on.
+- Tier 3 carries the per-use cost, so it should have monthly limits (for example a set number of homework photos) and a price set from measured cost.
+
+**Risks to watch**
+
+- If the free tier is thin, nobody shares it. If it is complete, nobody upgrades. The line proposed here: the child's practice is free and complete; the parent's view is paid.
+- The free tier shows the most common slip on screen as a taste of the report. The trend over weeks and what to do about it are paid.
+- Two paid tiers can confuse buyers. Launch with free plus tier 2, and add tier 3 once people are paying and asking for more.
+- Prices are not set. Test them with the first families.
+
 ## Is it a product?
 
 Possibly, with a narrow angle.
