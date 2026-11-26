@@ -87,6 +87,22 @@ With turning facts around and ×1, ×2, ×5 and ×10 known, 21 facts remain up t
 
 **Built as:** one self-contained page with no sign-up and no server, like the factoring quiz.
 
+### Version 1 as built (26 November 2026)
+
+Published at https://claude.ai/artifact/TLxZsJjW3UiLMs8Jqcipzx (private until shared from the page) and saved as [`adaptive-maths-quiz/times-tables.html`](adaptive-maths-quiz/times-tables.html).
+
+It follows the outline above, with these choices made during the build:
+
+- **Levels are all open.** The next unfinished level is marked "Up next", but a child or parent can pick any table. There is no automatic moving down.
+- **Passing a level:** 7 right out of the last 8 answers at that level.
+- **A solid fact:** three right answers without a hint, with at least five other questions between each one that counts. This stands in for "three separate occasions" so a square can turn gold within one sitting.
+- **Each fact fills two squares** (3 x 7 and 7 x 3), so the grid has 55 facts, not 100.
+- **Today's ten** picks up to five weak facts, up to three reviews, then new facts from the newest level.
+- **Beat your time** unlocks at 10 solid facts and does not change the grid.
+- **Slips named in feedback:** one lot out, adding instead of multiplying, and the well-known mix-ups (42, 48, 54, 56, 63).
+
+Tested with a logic script and a headless browser run through a level, a daily ten, the timed round and a reload. Not yet tried with a child.
+
 ### What comes after version 1
 
 1. Try version 1 with three to five children and watch where they get stuck or bored.

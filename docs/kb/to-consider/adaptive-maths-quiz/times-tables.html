@@ -1,0 +1,694 @@
+<title>Times Tables Trainer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Nunito:wght@400;600;700&display=swap">
+<style>
+/* Layout: one column. Home = today's ten, the grid (the game board), the levels, the parent corner.
+   Play = one big question at a time. The grid's lit squares are the only bright colour. */
+:root {
+  --bg: #f2f7f6;
+  --panel: #ffffff;
+  --ink: #14302e;
+  --muted: #557370;
+  --rule: #c9dbd8;
+  --accent: #0f7a6c;
+  --on-accent: #ffffff;
+  --s1: #cfe8e2;
+  --s2: #86cbbd;
+  --sun: #f5b82e;
+  --on-sun: #3a2a00;
+  --good: #1c6b43;
+  --good-bg: #e0f3e8;
+  --bad: #a3342b;
+  --bad-bg: #fbe9e6;
+  --font-text: "Nunito", "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-show: "Baloo 2", "Nunito", "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1f1e; --panel: #183130; --ink: #e4f1ee; --muted: #9dbab6; --rule: #2f4d4a;
+    --accent: #5fd0be; --on-accent: #06211e; --s1: #1f4640; --s2: #2f7a6d; --sun: #f5c04a; --on-sun: #3a2a00;
+    --good: #7fd6a4; --good-bg: #173326; --bad: #f0a097; --bad-bg: #3b1d1a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1f1e; --panel: #183130; --ink: #e4f1ee; --muted: #9dbab6; --rule: #2f4d4a;
+  --accent: #5fd0be; --on-accent: #06211e; --s1: #1f4640; --s2: #2f7a6d; --sun: #f5c04a; --on-sun: #3a2a00;
+  --good: #7fd6a4; --good-bg: #173326; --bad: #f0a097; --bad-bg: #3b1d1a;
+  color-scheme: dark;
+}
+
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-text); font-size: 17px; line-height: 1.45; }
+.page {
+  max-width: 34rem; margin: 0 auto;
+  padding-block: 1.5rem 4rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 1.25rem;
+}
+h1, h2 { font-family: var(--font-show); line-height: 1.15; margin: 0; text-wrap: balance; }
+h1 { font-size: 1.9rem; }
+h2 { font-size: 1.3rem; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 0.9em; }
+.top { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; justify-content: space-between; align-items: center; }
+.streak { font-weight: 700; border: 2px solid var(--rule); border-radius: 999px; padding: 0.15rem 0.8rem; background: var(--panel); }
+.view { display: flex; flex-direction: column; gap: 1.25rem; }
+.block { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; justify-content: space-between; }
+
+.btn {
+  font: inherit; font-weight: 700; border-radius: 10px; cursor: pointer;
+  padding: 0.7rem 1.3rem; border: 2px solid var(--accent); background: var(--accent); color: var(--on-accent);
+}
+.btn.quiet { background: transparent; color: var(--accent); border-color: var(--rule); font-weight: 600; padding: 0.45rem 0.9rem; font-size: 0.92em; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* the grid */
+.grid-wrap { overflow-x: auto; }
+.grid { border-collapse: separate; border-spacing: 3px; font-variant-numeric: tabular-nums; margin: 0 auto; }
+.grid th { font-size: 0.75rem; color: var(--muted); font-weight: 700; width: 1.9rem; height: 1.4rem; text-align: center; }
+.grid td { padding: 0; }
+.cell {
+  font: inherit; font-size: 0.72rem; font-weight: 700; width: 1.9rem; height: 1.9rem; padding: 0;
+  border: 0; border-radius: 5px; cursor: pointer; background: var(--bg); color: transparent;
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+.cell.s1 { background: var(--s1); box-shadow: none; }
+.cell.s2 { background: var(--s2); box-shadow: none; }
+.cell.s3 { background: var(--sun); color: var(--on-sun); box-shadow: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; font-size: 0.85rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.legend i { width: 0.9rem; height: 0.9rem; border-radius: 3px; display: inline-block; box-shadow: inset 0 0 0 1px var(--rule); background: var(--bg); }
+.legend i.s1 { background: var(--s1); box-shadow: none; } .legend i.s2 { background: var(--s2); box-shadow: none; } .legend i.s3 { background: var(--sun); box-shadow: none; }
+.peek { border-left: 4px solid var(--accent); padding-left: 0.75rem; }
+
+/* levels */
+.levels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+.level {
+  font: inherit; text-align: left; cursor: pointer; color: var(--ink); min-width: 0;
+  background: var(--bg); border: 2px solid var(--rule); border-radius: 10px; padding: 0.55rem 0.7rem;
+  display: flex; flex-direction: column; gap: 0.1rem;
+}
+.level b { font-family: var(--font-show); font-size: 1.05rem; }
+.level span { font-size: 0.8rem; color: var(--muted); }
+.level.next { border-color: var(--accent); }
+.level.done b::after { content: " \2713"; color: var(--good); }
+
+/* play */
+.ask { font-family: var(--font-show); font-size: 3.2rem; line-height: 1.1; text-align: center; font-variant-numeric: tabular-nums; }
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+.opt {
+  font-family: var(--font-show); font-size: 1.6rem; color: var(--ink); cursor: pointer;
+  background: var(--bg); border: 2px solid var(--rule); border-radius: 10px; padding: 0.6rem; min-width: 0;
+}
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:disabled { cursor: default; opacity: 0.55; }
+.opt.is-right { background: var(--good-bg); border-color: var(--good); color: var(--good); opacity: 1; }
+.opt.is-wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); opacity: 1; }
+.type { display: flex; gap: 0.6rem; justify-content: center; align-items: stretch; }
+.type input {
+  font-family: var(--font-show); font-size: 1.8rem; width: 6rem; text-align: center; color: var(--ink);
+  background: var(--bg); border: 2px solid var(--accent); border-radius: 10px; padding: 0.3rem;
+}
+.feedback { border-left: 4px solid var(--rule); padding-left: 0.8rem; display: flex; flex-direction: column; gap: 0.45rem; }
+.feedback.good { border-color: var(--good); } .feedback.bad { border-color: var(--bad); }
+.verdict { font-weight: 700; font-size: 1.1rem; }
+.feedback.good .verdict { color: var(--good); } .feedback.bad .verdict { color: var(--bad); }
+.note { background: var(--s1); border-radius: 8px; padding: 0.55rem 0.75rem; font-weight: 700; }
+.hintbox { background: var(--s1); border-radius: 8px; padding: 0.55rem 0.75rem; }
+.bar { height: 8px; background: var(--rule); border-radius: 4px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); width: 0; }
+
+/* strategy card */
+details.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 0.8rem 1rem; }
+details.card summary, details.parent summary { cursor: pointer; font-family: var(--font-show); font-size: 1.15rem; }
+.card-body { display: flex; flex-direction: column; gap: 0.6rem; padding-top: 0.6rem; }
+.card-body ul { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.dots { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
+.dotset { display: flex; flex-direction: column; gap: 3px; }
+.dotrow { display: flex; gap: 3px; }
+.dotrow i { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); display: block; }
+.dotrow.alt i { background: var(--sun); }
+details.parent { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 0.8rem 1rem; }
+.weak { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; }
+
+@media (max-width: 420px) {
+  body { font-size: 16px; }
+  .ask { font-size: 2.6rem; }
+  .grid { border-spacing: 2px; }
+  .grid th, .cell { width: 1.62rem; }
+  .cell { height: 1.62rem; font-size: 0.62rem; }
+  .levels { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cell.s3.pop { animation: pop 0.5s ease-out; }
+  @keyframes pop { 0% { transform: scale(0.6); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+}
+</style>
+
+<div class="page">
+  <div class="top">
+    <h1>Times Tables Trainer</h1>
+    <span class="streak" id="streak"></span>
+  </div>
+
+  <!-- HOME -->
+  <div class="view" id="home">
+    <div class="block">
+      <div class="row">
+        <div>
+          <h2 id="todayTitle">Today's ten</h2>
+          <p class="muted small" id="todayText">Ten questions picked for you. Then you are done for today.</p>
+        </div>
+        <button class="btn" id="todayBtn" type="button">Start</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="row">
+        <h2>Your grid</h2>
+        <span id="left" class="muted"></span>
+      </div>
+      <p class="muted small">Every square is one fact. Get a fact right three times, with other questions in between, and its square lights up gold. Each fact fills two squares, because 3 × 7 and 7 × 3 are the same.</p>
+      <div class="grid-wrap"><table class="grid" id="grid" aria-label="Times tables grid"></table></div>
+      <div class="legend"><span><i></i>Not yet</span><span><i class="s1"></i>Started</span><span><i class="s2"></i>Nearly</span><span><i class="s3"></i>Solid</span></div>
+      <p class="peek" id="peek" hidden></p>
+    </div>
+
+    <div class="block">
+      <h2>Learn the tricks</h2>
+      <p class="muted small">Each level teaches one trick. Start at the top, or pick any table you want to practise.</p>
+      <div class="levels" id="levels"></div>
+    </div>
+
+    <div class="block">
+      <div class="row">
+        <div>
+          <h2>Beat your time</h2>
+          <p class="muted small" id="speedText"></p>
+        </div>
+        <button class="btn quiet" id="speedBtn" type="button">Go</button>
+      </div>
+    </div>
+
+    <details class="parent" id="parent">
+      <summary>For parents</summary>
+      <div class="card-body">
+        <p>This trainer teaches a trick for each table, then practises until each fact sticks. A gold square means your child has answered that fact correctly three times without a hint. Gold facts come back for review and fade if they are missed.</p>
+        <p><strong>Facts to help with</strong></p>
+        <ol class="weak" id="weak"></ol>
+        <p class="muted small">Progress is saved in this browser on this device only. Nothing is sent anywhere, and clearing the browser's data erases it.</p>
+        <div><button class="btn quiet" id="reset" type="button">Start over</button></div>
+      </div>
+    </details>
+  </div>
+
+  <!-- PLAY -->
+  <div class="view" id="play" hidden>
+    <div class="row">
+      <button class="btn quiet" id="back" type="button">← Home</button>
+      <span class="muted" id="where"></span>
+    </div>
+    <div class="bar" id="bar" hidden><i id="barFill"></i></div>
+
+    <details class="card" id="card" hidden>
+      <summary id="cardTitle"></summary>
+      <div class="card-body" id="cardBody"></div>
+    </details>
+
+    <div class="block" id="qblock">
+      <p class="ask" id="ask"></p>
+      <div class="options" id="options"></div>
+      <form class="type" id="typeForm" hidden>
+        <input id="answer" type="text" inputmode="numeric" autocomplete="off" maxlength="3" aria-label="Your answer">
+        <button class="btn" type="submit" id="checkBtn">Check</button>
+      </form>
+      <p class="hintbox" id="hint" hidden></p>
+      <div class="feedback" id="feedback" aria-live="polite" hidden></div>
+      <div class="row">
+        <button class="btn" id="next" type="button" hidden>Next</button>
+        <button class="btn quiet" id="hintBtn" type="button">Show the trick</button>
+      </div>
+    </div>
+
+    <div class="block" id="summary" hidden>
+      <h2 id="sumTitle"></h2>
+      <div id="sumBody" class="card-body" style="padding-top:0"></div>
+      <div><button class="btn" id="sumHome" type="button">Back to home</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================= logic (no page access) =================
+var X = '×', MINUS = '−';
+function ri(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = ri(0, i); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function key(a, b) { return a <= b ? a + ',' + b : b + ',' + a; }
+
+var LEVELS = [
+  { id: 't1', name: X + '1 and ' + X + '10', tables: [1, 10] },
+  { id: 't2', name: X + '2', tables: [2] },
+  { id: 't5', name: X + '5', tables: [5] },
+  { id: 'turn', name: 'Turn it around', turn: true },
+  { id: 't4', name: X + '4', tables: [4] },
+  { id: 't9', name: X + '9', tables: [9] },
+  { id: 't3', name: X + '3', tables: [3] },
+  { id: 't6', name: X + '6', tables: [6] },
+  { id: 't8', name: X + '8', tables: [8] },
+  { id: 'sq', name: 'Squares', squares: true },
+  { id: 't7', name: X + '7', tables: [7] },
+  { id: 'mix', name: 'Mixed', mix: true },
+  { id: 'bonus', name: 'Bonus: ' + X + '11 and ' + X + '12', tables: [11, 12], bonus: true }
+];
+
+// An item is one fact with the trick used for it: t is the table the trick belongs to, n is the other number.
+function bestItem(a, b) {
+  var first = [1, 10, 2, 5], rest = [9, 4, 3, 6, 8, 7], i;
+  for (i = 0; i < first.length; i++) { if (a === first[i]) return { t: a, n: b }; if (b === first[i]) return { t: b, n: a }; }
+  if (a === b) return { t: a, n: a, sq: true };
+  for (i = 0; i < rest.length; i++) { if (a === rest[i]) return { t: a, n: b }; if (b === rest[i]) return { t: b, n: a }; }
+  return { t: a, n: b };
+}
+function pool(L) {
+  var out = [], seen = {}, t, n;
+  function add(it) { var k = key(it.t, it.n); if (!seen[k]) { seen[k] = 1; out.push(it); } }
+  if (L.tables) L.tables.forEach(function (tb) { for (n = 1; n <= (L.bonus ? 12 : 10); n++) add({ t: tb, n: n }); });
+  else if (L.turn) [2, 5, 10].forEach(function (tb) { for (n = 3; n <= 9; n++) if (n !== tb) add({ t: tb, n: n, turn: true }); });
+  else if (L.squares) for (n = 1; n <= 10; n++) add({ t: n, n: n, sq: true });
+  else if (L.mix) for (t = 2; t <= 10; t++) for (n = t; n <= 10; n++) add(bestItem(t, n));
+  return out;
+}
+function work(it) {
+  var t = it.t, n = it.n, pre = it.turn ? n + ' ' + X + ' ' + t + ' is the same as ' + t + ' ' + X + ' ' + n + '. ' : '';
+  if (it.sq) return n === 1 ? 'One lot of 1 is 1.' : (n - 1) + ' ' + X + ' ' + n + ' = ' + (n - 1) * n + '. Add one more ' + n + ': ' + (n - 1) * n + ' + ' + n + ' = ' + n * n + '.';
+  switch (t) {
+    case 1: return pre + 'One lot of ' + n + ' is ' + n + '.';
+    case 10: return pre + 'Move each digit one place to the left: ' + n + ' becomes ' + n * 10 + '.';
+    case 2: return pre + 'Double ' + n + ': ' + n + ' + ' + n + ' = ' + 2 * n + '.';
+    case 5: return pre + n + ' ' + X + ' 10 = ' + 10 * n + '. Half of ' + 10 * n + ' is ' + 5 * n + '.';
+    case 4: return pre + 'Double ' + n + ' is ' + 2 * n + '. Double again: ' + 4 * n + '.';
+    case 9: return pre + n + ' ' + X + ' 10 = ' + 10 * n + '. Take away one ' + n + ': ' + 10 * n + ' ' + MINUS + ' ' + n + ' = ' + 9 * n + '.';
+    case 3: return pre + 'Double ' + n + ' is ' + 2 * n + '. Add one more ' + n + ': ' + 2 * n + ' + ' + n + ' = ' + 3 * n + '.';
+    case 6: return pre + n + ' ' + X + ' 5 = ' + 5 * n + '. Add one more ' + n + ': ' + 5 * n + ' + ' + n + ' = ' + 6 * n + '.';
+    case 8: return pre + 'Double ' + n + ' three times: ' + 2 * n + ', ' + 4 * n + ', ' + 8 * n + '.';
+    case 7: return pre + n + ' ' + X + ' 5 = ' + 5 * n + ' and ' + n + ' ' + X + ' 2 = ' + 2 * n + '. Add them: ' + 5 * n + ' + ' + 2 * n + ' = ' + 7 * n + '.';
+    case 11: return pre + n + ' ' + X + ' 10 = ' + 10 * n + '. Add one more ' + n + ': ' + 10 * n + ' + ' + n + ' = ' + 11 * n + '.';
+    default: return pre + n + ' ' + X + ' 10 = ' + 10 * n + ' and ' + n + ' ' + X + ' 2 = ' + 2 * n + '. Add them: ' + 10 * n + ' + ' + 2 * n + ' = ' + 12 * n + '.';
+  }
+}
+function hintFor(it) {
+  var t = it.t, n = it.n, pre = it.turn ? 'Turn it around: think of ' + t + ' ' + X + ' ' + n + '. ' : '';
+  if (it.sq) return n === 1 ? 'One lot of a number is the number itself.' : 'Start from ' + (n - 1) + ' ' + X + ' ' + n + ', then add one more ' + n + '.';
+  switch (t) {
+    case 1: return pre + 'One lot of a number is the number itself.';
+    case 10: return pre + 'Move the digits of ' + n + ' one place to the left.';
+    case 2: return pre + 'Double ' + n + '.';
+    case 5: return pre + 'Start from ' + n + ' ' + X + ' 10, then halve it.';
+    case 4: return pre + 'Double ' + n + ', then double again.';
+    case 9: return pre + 'Start from ' + n + ' ' + X + ' 10, then take away one ' + n + '.';
+    case 3: return pre + 'Double ' + n + ', then add one more ' + n + '.';
+    case 6: return pre + 'Start from ' + n + ' ' + X + ' 5, then add one more ' + n + '.';
+    case 8: return pre + 'Double ' + n + ' three times.';
+    case 7: return pre + 'Work out ' + n + ' ' + X + ' 5 and ' + n + ' ' + X + ' 2, then add them.';
+    case 11: return pre + 'Start from ' + n + ' ' + X + ' 10, then add one more ' + n + '.';
+    default: return pre + 'Work out ' + n + ' ' + X + ' 10 and ' + n + ' ' + X + ' 2, then add them.';
+  }
+}
+
+var MIXUPS = [42, 48, 54, 56, 63];
+function slipKind(a, b, ans) {
+  var p = a * b;
+  if (ans === a * (b + 1) || ans === a * (b - 1) || ans === (a + 1) * b || ans === (a - 1) * b) return 'neighbour';
+  if (ans === a + b) return 'add';
+  if (MIXUPS.indexOf(p) >= 0 && MIXUPS.indexOf(ans) >= 0) return 'mixup';
+  return 'other';
+}
+var SLIP_TIPS = {
+  neighbour: 'You were one lot out. That answer belongs to the fact next door.',
+  add: 'That is the two numbers added. Times means lots of: so many lots of the other number.',
+  mixup: 'Almost everyone mixes these up: 6 ' + X + ' 7 = 42, 6 ' + X + ' 8 = 48, 6 ' + X + ' 9 = 54, 7 ' + X + ' 8 = 56, 7 ' + X + ' 9 = 63.'
+};
+function distractors(a, b) {
+  var p = a * b, out = [], seen = {}; seen[p] = 1;
+  function take(v) { if (v > 0 && !seen[v] && out.length < 3) { seen[v] = 1; out.push(v); } }
+  var near = shuffle([a * (b + 1), a * (b - 1), (a + 1) * b, (a - 1) * b]);
+  take(near[0]);
+  if (a > 1 && b > 1) take(a + b);
+  if (MIXUPS.indexOf(p) >= 0) shuffle(MIXUPS.slice()).forEach(function (v) { if (out.length < 2) take(v); });
+  near.forEach(take);
+  shuffle([p + 1, p - 1, p + 2, p - 2, p + 10, p - 10]).forEach(take);
+  return out;
+}
+
+// ----- fact memory -----
+// f.s: 0 to 3 (3 = solid). A right answer only counts if 5 other questions came since the last one that counted.
+function markFact(state, k, ok, hinted) {
+  var f = state.facts[k] || (state.facts[k] = { s: 0, w: 0, n: 0 });
+  state.Q++; f.n++;
+  var before = f.s;
+  if (!ok) { f.w++; if (f.s === 3) f.s = 2; f.gap = 0; f.at = state.Q; }
+  else if (!hinted) {
+    if (f.s < 3) {
+      if (f.at === undefined || state.Q - f.at >= 5 || f.n === 1) { f.s++; f.at = state.Q; }
+      if (f.s === 3) { f.gap = 8; f.due = state.Q + 8; }
+    } else if (f.due === undefined || f.due <= state.Q) { f.gap = Math.min((f.gap || 8) * 2, 64); f.due = state.Q + f.gap; }
+  }
+  return { before: before, after: f.s };
+}
+function gridKeys() { var k = [], a, b; for (a = 1; a <= 10; a++) for (b = a; b <= 10; b++) k.push(key(a, b)); return k; }
+function solidCount(state) { return gridKeys().filter(function (k) { return state.facts[k] && state.facts[k].s === 3; }).length; }
+function currentLevel(state) { for (var i = 0; i < LEVELS.length; i++) if (!state.done[LEVELS[i].id]) return i; return LEVELS.length - 1; }
+
+// One trick per fact: the first level that teaches it wins.
+var ITEMS = (function () {
+  var m = {};
+  LEVELS.forEach(function (L, i) { if (L.turn || L.mix) return; pool(L).forEach(function (it) { var k = key(it.t, it.n); if (!m[k]) m[k] = { t: it.t, n: it.n, sq: it.sq, level: i }; }); });
+  return m;
+})();
+
+function pickDaily(state) {
+  var cur = currentLevel(state), due = [], weak = [], fresh = [];
+  Object.keys(ITEMS).forEach(function (k) {
+    var it = ITEMS[k], f = state.facts[k];
+    if (it.level > cur) return;
+    if (!f || !f.n) fresh.push(it);
+    else if (f.s === 3) { if (f.due === undefined || f.due <= state.Q) due.push(it); }
+    else weak.push(it);
+  });
+  weak.sort(function (x, y) { var fx = state.facts[key(x.t, x.n)], fy = state.facts[key(y.t, y.n)]; return (fy.w - fx.w) || (fx.s - fy.s); });
+  fresh.sort(function (x, y) { return y.level - x.level; });
+  // up to 5 weak facts, up to 3 reviews, then new facts from the newest level; top up from whatever is left
+  shuffle(due);
+  var list = weak.slice(0, 5).concat(due.slice(0, 3));
+  list = list.concat(fresh.slice(0, 10 - list.length), weak.slice(5), due.slice(3)).slice(0, 10);
+  if (list.length < 10) {
+    var have = {}; list.forEach(function (it) { have[key(it.t, it.n)] = 1; });
+    shuffle(Object.keys(ITEMS)).forEach(function (k) { if (list.length < 10 && !have[k] && ITEMS[k].level <= Math.max(cur, 2)) list.push(ITEMS[k]); });
+  }
+  return shuffle(list);
+}
+
+// ----- streak: days in a row, with one free skipped day each week -----
+function dayStr(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+function toDate(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2], 12); }
+function daysBetween(a, b) { return Math.round((toDate(b) - toDate(a)) / 86400000); }
+function weekId(s) { var d = toDate(s); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return dayStr(d); }
+function streakAfter(st, today) {
+  if (!st || !st.last) return { count: 1, last: today, skipWeek: st && st.skipWeek };
+  var gap = daysBetween(st.last, today);
+  if (gap <= 0) return st;
+  if (gap === 1) return { count: st.count + 1, last: today, skipWeek: st.skipWeek };
+  if (gap === 2 && st.skipWeek !== weekId(today)) return { count: st.count + 1, last: today, skipWeek: weekId(today) };
+  return { count: 1, last: today, skipWeek: st.skipWeek };
+}
+function streakShown(st, today) {
+  if (!st || !st.last) return 0;
+  var gap = daysBetween(st.last, today);
+  if (gap <= 1) return st.count;
+  if (gap === 2 && st.skipWeek !== weekId(today)) return st.count;
+  return 0;
+}
+
+var CARDS = {
+  t1: { idea: 'One lot of a number is the number itself. For ' + X + '10, each digit moves one place to the left and a 0 fills the gap.', ex: ['1 ' + X + ' 7 = 7', '7 ' + X + ' 10 = 70'], dots: [[7, [10]]], cap: 'Ten rows of 7 make 70.' },
+  t2: { idea: 'Times 2 means double. Add the number to itself.', ex: ['2 ' + X + ' 7 = 7 + 7 = 14', '2 ' + X + ' 9 = 9 + 9 = 18'], dots: [[7, [1, 1]]], cap: 'Two rows of 7: 7 + 7.' },
+  t5: { idea: 'Five is half of ten. Work out ' + X + '10, then halve it.', ex: ['5 ' + X + ' 8: 8 ' + X + ' 10 = 80, and half of 80 is 40', '5 ' + X + ' 6: 6 ' + X + ' 10 = 60, and half of 60 is 30'], dots: [[8, [5, 5]]], cap: 'Ten rows of 8 make 80. The top five rows are half of that: 40.' },
+  turn: { idea: 'The order does not matter. 7 ' + X + ' 3 and 3 ' + X + ' 7 are the same dots, just turned. So every fact you know, you know both ways, and there is only half as much to learn.', ex: ['7 ' + X + ' 2 = 2 ' + X + ' 7 = 14', '9 ' + X + ' 5 = 5 ' + X + ' 9 = 45'], dots: [[7, [3]], [3, [7]]], cap: 'Three rows of 7, and seven rows of 3. Both are 21.' },
+  t4: { idea: 'Four is double two. Double the number, then double the answer.', ex: ['4 ' + X + ' 7: double 7 is 14, double 14 is 28', '4 ' + X + ' 6: double 6 is 12, double 12 is 24'], dots: [[7, [2, 2]]], cap: 'Two rows of 7 make 14. Two more make 28.' },
+  t9: { idea: 'Nine is one less than ten. Work out ' + X + '10, then take away one lot.', ex: ['9 ' + X + ' 7: 70 ' + MINUS + ' 7 = 63', '9 ' + X + ' 4: 40 ' + MINUS + ' 4 = 36'], dots: [[7, [9, 1]]], cap: 'Ten rows of 7 make 70. Cover the last row and 63 are left.' },
+  t3: { idea: 'Three is two plus one. Double the number, then add one more lot.', ex: ['3 ' + X + ' 7: 14 + 7 = 21', '3 ' + X + ' 8: 16 + 8 = 24'], dots: [[7, [2, 1]]], cap: 'Two rows of 7 make 14. One more row makes 21.' },
+  t6: { idea: 'Six is five plus one. Work out ' + X + '5, then add one more lot.', ex: ['6 ' + X + ' 7: 35 + 7 = 42', '6 ' + X + ' 8: 40 + 8 = 48'], dots: [[7, [5, 1]]], cap: 'Five rows of 7 make 35. One more row makes 42.' },
+  t8: { idea: 'Eight is double, double, double.', ex: ['8 ' + X + ' 6: 12, 24, 48', '8 ' + X + ' 7: 14, 28, 56'], dots: [[6, [2, 2, 2, 2]]], cap: 'Two rows of 6 make 12. Four rows make 24. Eight rows make 48.' },
+  sq: { idea: 'A number times itself makes a square. These ten are worth knowing by heart, because other facts are one step away from them.', ex: ['7 ' + X + ' 7 = 49, so 7 ' + X + ' 8 is 49 + 7 = 56', '6 ' + X + ' 6 = 36, so 6 ' + X + ' 7 is 36 + 6 = 42'], dots: [[7, [7]]], cap: 'Seven rows of 7 make a square: 49.' },
+  t7: { idea: 'You already know most of the 7s from the other tables, turned around. For any you forget: seven is five plus two.', ex: ['7 ' + X + ' 8: 40 + 16 = 56', '7 ' + X + ' 6: 30 + 12 = 42'], dots: [[8, [5, 2]]], cap: 'Five rows of 8 make 40. Two more rows make 16. Together: 56.' },
+  mix: { idea: 'Every fact, in any order. Pick the trick that fits: turn it around, double, or start from ' + X + '5 or ' + X + '10.', ex: ['6 ' + X + ' 9: 60 ' + MINUS + ' 6 = 54', '8 ' + X + ' 4: double 8 is 16, double 16 is 32'], dots: [], cap: '' },
+  bonus: { idea: 'Eleven is ten plus one. Twelve is ten plus two.', ex: ['11 ' + X + ' 7: 70 + 7 = 77', '12 ' + X + ' 7: 70 + 14 = 84'], dots: [[7, [10, 2]]], cap: 'Ten rows of 7 make 70. Two more rows make 14. Together: 84.' }
+};
+
+// ================= page =================
+if (typeof document !== 'undefined') (function () {
+  var el = function (id) { return document.getElementById(id); };
+  var KEY = 'times-tables-v1';
+  var state, ses = null, q = null, peekKey = null, resetArmed = false;
+
+  function fresh() { return { facts: {}, done: {}, Q: 0, streak: null, dailyDay: null, best: null }; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function load() {
+    try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.facts && s.done && typeof s.Q === 'number') return s; } catch (e) {}
+    return null;
+  }
+  function today() { return dayStr(new Date()); }
+  function factOf(k) { return state.facts[k] || { s: 0, w: 0, n: 0 }; }
+
+  // ---------- home ----------
+  function drawGrid(popKeys) {
+    var html = '<tr><th>' + X + '</th>';
+    for (var c = 1; c <= 10; c++) html += '<th scope="col">' + c + '</th>';
+    html += '</tr>';
+    for (var r = 1; r <= 10; r++) {
+      html += '<tr><th scope="row">' + r + '</th>';
+      for (c = 1; c <= 10; c++) {
+        var k = key(r, c), s = factOf(k).s;
+        html += '<td><button type="button" class="cell s' + s + (popKeys && popKeys[k] ? ' pop' : '') + '" data-a="' + r + '" data-b="' + c + '" aria-label="' + r + ' times ' + c + ', ' + ['not started', 'started', 'nearly solid', 'solid'][s] + '">' + (s === 3 ? r * c : '') + '</button></td>';
+      }
+      html += '</tr>';
+    }
+    el('grid').innerHTML = html;
+  }
+  el('grid').addEventListener('click', function (ev) {
+    var b = ev.target.closest ? ev.target.closest('.cell') : null; if (!b) return;
+    var a = +b.dataset.a, c = +b.dataset.b, k = key(a, c), it = ITEMS[k], s = factOf(k).s;
+    el('peek').hidden = false;
+    el('peek').textContent = a + ' ' + X + ' ' + c + ' = ' + a * c + '. ' + ['Not started yet.', 'Started.', 'Nearly solid.', 'Solid.'][s] + ' The trick: ' + work(it);
+  });
+
+  function drawHome(popKeys) {
+    var t = today(), n = streakShown(state.streak, t), solid = solidCount(state), cur = currentLevel(state);
+    el('streak').textContent = n ? n + (n === 1 ? ' day in a row' : ' days in a row') : 'Start your streak today';
+    var doneToday = state.dailyDay === t;
+    el('todayTitle').textContent = doneToday ? 'Done for today' : "Today's ten";
+    el('todayText').textContent = doneToday ? 'Nice work. Come back tomorrow to keep your streak, or do an extra ten now.' : 'Ten questions picked for you. Then you are done for today.';
+    el('todayBtn').textContent = doneToday ? 'Extra ten' : 'Start';
+    el('todayBtn').className = doneToday ? 'btn quiet' : 'btn';
+    el('left').textContent = solid === 55 ? 'All 55 facts solid!' : (55 - solid) + ' of 55 facts left';
+    drawGrid(popKeys);
+
+    var box = el('levels'); box.innerHTML = '';
+    LEVELS.forEach(function (L, i) {
+      var p = pool(L), got = p.filter(function (it) { return factOf(key(it.t, it.n)).s === 3; }).length;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'level' + (state.done[L.id] ? ' done' : '') + (i === cur && !state.done[L.id] ? ' next' : '');
+      b.innerHTML = '<b></b><span></span>';
+      b.firstChild.textContent = L.name;
+      b.lastChild.textContent = (i === cur && !state.done[L.id] ? 'Up next. ' : '') + got + ' of ' + p.length + ' solid';
+      b.addEventListener('click', function () { startLevel(i); });
+      box.appendChild(b);
+    });
+
+    var canSpeed = solid >= 10;
+    el('speedBtn').disabled = !canSpeed;
+    el('speedText').textContent = !canSpeed ? 'Light up 10 facts to unlock. You have ' + solid + '.'
+      : state.best ? 'Ten facts you know, against the clock. Your best: ' + state.best.toFixed(1) + ' seconds.' : 'Ten facts you know, against the clock.';
+
+    var seen = Object.keys(ITEMS).filter(function (k) { var f = state.facts[k]; return f && f.n && (f.w > 0 || f.s < 3); });
+    seen.sort(function (x, y) { var fx = state.facts[x], fy = state.facts[y]; return (fy.w - fx.w) || (fx.s - fy.s); });
+    var weak = el('weak'); weak.innerHTML = '';
+    if (!seen.length) { var li0 = document.createElement('li'); li0.textContent = 'Nothing yet. This list fills in once your child has answered some questions.'; weak.appendChild(li0); }
+    seen.slice(0, 5).forEach(function (k) {
+      var it = ITEMS[k], li = document.createElement('li');
+      li.textContent = it.t + ' ' + X + ' ' + it.n + ' = ' + it.t * it.n + (state.facts[k].w ? ' (missed ' + state.facts[k].w + (state.facts[k].w === 1 ? ' time' : ' times') + ')' : ' (still learning)') + '. Remind them: ' + work(it);
+      weak.appendChild(li);
+    });
+  }
+
+  el('reset').addEventListener('click', function () {
+    if (!resetArmed) { resetArmed = true; el('reset').textContent = 'Tap again to erase all progress'; return; }
+    resetArmed = false; el('reset').textContent = 'Start over';
+    state = fresh(); save(); el('peek').hidden = true; drawHome();
+  });
+
+  function show(view) {
+    el('home').hidden = view !== 'home'; el('play').hidden = view !== 'play';
+    if (view === 'home') { resetArmed = false; el('reset').textContent = 'Start over'; }
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- sessions ----------
+  function startLevel(i) {
+    var L = LEVELS[i];
+    ses = { type: 'level', level: i, pool: pool(L), count: 0, row: 0, win: [], retry: [], last: null, solid0: solidCount(state) };
+    var c = CARDS[L.id];
+    el('cardTitle').textContent = 'The trick for ' + L.name;
+    var html = '<p>' + c.idea + '</p><ul>' + c.ex.map(function (e) { return '<li>' + e + '</li>'; }).join('') + '</ul>';
+    if (c.dots.length) {
+      html += '<div class="dots" aria-hidden="true">' + c.dots.map(function (d) {
+        var rows = '';
+        d[1].forEach(function (cnt, gi) { for (var r = 0; r < cnt; r++) { rows += '<div class="dotrow' + (gi % 2 ? ' alt' : '') + '">'; for (var x = 0; x < d[0]; x++) rows += '<i></i>'; rows += '</div>'; } });
+        return '<div class="dotset">' + rows + '</div>';
+      }).join('') + '</div><p class="muted small">' + c.cap + '</p>';
+    }
+    el('cardBody').innerHTML = html;
+    el('card').hidden = false; el('card').open = true;
+    el('bar').hidden = true;
+    begin();
+  }
+  function startDaily() {
+    ses = { type: 'daily', queue: pickDaily(state), count: 0, right: 0, solid0: solidCount(state), lit: {} };
+    el('card').hidden = true; el('bar').hidden = false;
+    begin();
+  }
+  function startSpeed() {
+    var solid = gridKeys().filter(function (k) { return factOf(k).s === 3 && ITEMS[k].t !== 1 && ITEMS[k].n !== 1; });
+    if (solid.length < 10) solid = gridKeys().filter(function (k) { return factOf(k).s === 3; });
+    ses = { type: 'speed', queue: shuffle(solid).slice(0, 10).map(function (k) { return ITEMS[k]; }), count: 0, t0: Date.now(), slips: 0 };
+    el('card').hidden = true; el('bar').hidden = false;
+    begin();
+  }
+  function begin() { el('summary').hidden = true; el('qblock').hidden = false; show('play'); ask(true); }
+
+  function pickLevelItem() {
+    for (var i = 0; i < ses.retry.length; i++) if (ses.retry[i].at <= ses.count) return ses.retry.splice(i, 1)[0].it;
+    var best = null, total = 0, list = ses.pool.filter(function (it) { return ses.pool.length < 2 || key(it.t, it.n) !== ses.last; });
+    var w = list.map(function (it) { var f = factOf(key(it.t, it.n)); var x = (4 - f.s) + Math.min(f.w, 3); total += x; return x; });
+    var r = Math.random() * total;
+    for (i = 0; i < list.length; i++) { r -= w[i]; if (r <= 0) { best = list[i]; break; } }
+    return best || list[list.length - 1];
+  }
+
+  function ask(first) {
+    var it;
+    if (ses.type === 'level') it = pickLevelItem();
+    else { if (ses.count >= ses.queue.length) return finishSession(); it = ses.queue[ses.count]; }
+    var k = key(it.t, it.n), f = factOf(k);
+    var a = it.t, b = it.n;
+    if (it.turn || (!it.sq && Math.random() < 0.5)) { a = it.n; b = it.t; }
+    var mode = ses.type === 'speed' ? 'type' : ses.type === 'level' ? (ses.row >= 2 ? 'type' : 'choose') : (f.s >= 1 ? 'type' : 'choose');
+    q = { it: it, k: k, a: a, b: b, p: a * b, mode: mode, hinted: false, done: false };
+    if (ses.type === 'level') ses.last = k;
+
+    el('where').textContent = ses.type === 'level' ? 'Level ' + (ses.level + 1) + ': ' + LEVELS[ses.level].name
+      : (ses.type === 'daily' ? "Today's ten" : 'Beat your time') + ': ' + (ses.count + 1) + ' of ' + ses.queue.length;
+    if (ses.type !== 'level') el('barFill').style.width = (100 * ses.count / ses.queue.length) + '%';
+    el('ask').textContent = a + ' ' + X + ' ' + b;
+    el('feedback').hidden = true; el('hint').hidden = true; el('next').hidden = true;
+    el('hintBtn').hidden = ses.type === 'speed';
+    el('options').hidden = mode !== 'choose'; el('typeForm').hidden = mode !== 'type';
+    if (mode === 'choose') {
+      var box = el('options'); box.innerHTML = '';
+      shuffle([q.p].concat(distractors(a, b))).forEach(function (v) {
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'opt'; btn.textContent = v;
+        if (v === q.p) btn.dataset.ok = '1';
+        btn.addEventListener('click', function () {
+          var all = box.children;
+          for (var i = 0; i < all.length; i++) { all[i].disabled = true; if (all[i].dataset.ok) all[i].classList.add('is-right'); }
+          if (v !== q.p) btn.classList.add('is-wrong');
+          answered(v);
+        });
+        box.appendChild(btn);
+      });
+    } else {
+      el('answer').value = ''; el('answer').disabled = false; el('checkBtn').disabled = false;
+      if (!first) el('answer').focus();
+    }
+  }
+
+  el('typeForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (!q || q.done) return;
+    var s = el('answer').value.trim(); if (!/^\d{1,3}$/.test(s)) return;
+    var v = parseInt(s, 10);
+    if (ses.type === 'speed') {
+      if (v !== q.p) { ses.slips++; el('feedback').className = 'feedback bad'; el('feedback').innerHTML = '<p class="verdict">Not yet. Try again.</p>'; el('feedback').hidden = false; el('answer').value = ''; el('answer').focus(); return; }
+      ses.count++; ask(false); return;
+    }
+    el('answer').disabled = true; el('checkBtn').disabled = true;
+    answered(v);
+  });
+
+  el('hintBtn').addEventListener('click', function () {
+    if (!q || q.done) return;
+    q.hinted = true; el('hintBtn').hidden = true;
+    el('hint').textContent = 'The trick: ' + hintFor(q.it); el('hint').hidden = false;
+  });
+
+  function answered(v) {
+    var ok = v === q.p, fact = q.a + ' ' + X + ' ' + q.b + ' = ' + q.p, html = '', note = '';
+    q.done = true; el('hintBtn').hidden = true;
+    var m = markFact(state, q.k, ok, q.hinted);
+    ses.count++;
+
+    if (ok) {
+      html += '<p class="verdict">✓ Yes! ' + fact + '.</p>';
+      if (q.hinted) html += '<p>' + work(q.it) + '</p>';
+      if (m.after === 3 && m.before < 3) { note = 'That fact is now solid. Its square is gold.'; if (ses.lit) ses.lit[q.k] = 1; }
+    } else {
+      html += '<p class="verdict">✗ Not quite. ' + fact + '.</p>';
+      var kind = slipKind(q.a, q.b, v);
+      if (SLIP_TIPS[kind]) html += '<p>' + SLIP_TIPS[kind] + '</p>';
+      html += '<p><strong>The trick:</strong> ' + work(q.it) + '</p>';
+    }
+
+    if (ses.type === 'daily') { if (ok) ses.right++; }
+    else {
+      if (!ok) { ses.row = 0; ses.retry.push({ it: q.it, at: ses.count + 2 }); if (!note) note = 'You will see this one again in a moment.'; }
+      else if (!q.hinted) { ses.row++; if (ses.row === 2 && q.mode === 'choose') note = note || 'Two in a row. Next you type the answer yourself.'; }
+      if (!ok || !q.hinted) { ses.win.push(ok); if (ses.win.length > 8) ses.win.shift(); }
+      var L = LEVELS[ses.level];
+      if (!state.done[L.id] && ses.win.length === 8 && ses.win.filter(Boolean).length >= 7) {
+        state.done[L.id] = true; ses.passed = true;
+        note = 'Level passed: 7 of your last 8 right.' + (ses.level < LEVELS.length - 1 ? ' Next up: ' + LEVELS[ses.level + 1].name + '.' : ' That was the last level!');
+      }
+    }
+    if (note) html += '<p class="note">' + note + '</p>';
+    var fb = el('feedback'); fb.className = 'feedback ' + (ok ? 'good' : 'bad'); fb.innerHTML = html; fb.hidden = false;
+    save();
+    el('next').textContent = ses.passed && ses.level < LEVELS.length - 1 ? 'Go to the next level' : 'Next';
+    el('next').hidden = false; el('next').focus();
+  }
+
+  el('next').addEventListener('click', function () {
+    if (ses.type === 'level' && ses.passed && ses.level < LEVELS.length - 1) return startLevel(ses.level + 1);
+    ask(false);
+  });
+
+  function finishSession() {
+    var body = '';
+    if (ses.type === 'daily') {
+      var t = today(), first = state.dailyDay !== t;
+      if (first) { state.streak = streakAfter(state.streak, t); state.dailyDay = t; }
+      var lit = Object.keys(ses.lit).length, n = streakShown(state.streak, t);
+      el('sumTitle').textContent = first ? 'Done for today!' : 'Extra ten done!';
+      body += '<p>You got <strong>' + ses.right + ' of ' + ses.queue.length + '</strong> right.</p>';
+      body += '<p>' + (lit ? lit + (lit === 1 ? ' new fact' : ' new facts') + ' turned gold. ' : '') + (55 - solidCount(state)) + ' of 55 facts left.</p>';
+      body += '<p class="note">' + n + (n === 1 ? ' day' : ' days') + ' in a row. Come back tomorrow to keep it going.</p>';
+      ses.pop = ses.lit;
+    } else {
+      var secs = (Date.now() - ses.t0) / 1000, best = !state.best || secs < state.best;
+      el('sumTitle').textContent = best ? 'New best time!' : 'Finished!';
+      body += '<p>Ten facts in <strong>' + secs.toFixed(1) + ' seconds</strong>' + (ses.slips ? ', with ' + ses.slips + (ses.slips === 1 ? ' slip' : ' slips') : '') + '.</p>';
+      body += '<p>' + (best ? (state.best ? 'Your old best was ' + state.best.toFixed(1) + ' seconds.' : 'That is your first time on the board.') : 'Your best is ' + state.best.toFixed(1) + ' seconds.') + '</p>';
+      if (best) state.best = secs;
+    }
+    save();
+    el('barFill').style.width = '100%';
+    el('sumBody').innerHTML = body;
+    el('qblock').hidden = true; el('summary').hidden = false;
+    el('sumHome').focus();
+  }
+
+  function goHome() { var pop = ses && ses.pop; ses = null; q = null; drawHome(pop); show('home'); }
+  el('back').addEventListener('click', goHome);
+  el('sumHome').addEventListener('click', goHome);
+  el('todayBtn').addEventListener('click', startDaily);
+  el('speedBtn').addEventListener('click', startSpeed);
+
+  state = load() || fresh();
+  drawHome();
+})();
+</script>
